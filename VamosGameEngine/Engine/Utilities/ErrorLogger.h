@@ -9,4 +9,5 @@ public:
     static void Log(HRESULT hr, std::string message);
     static void Log(HRESULT hr, std::wstring message);
     static void Log(COMException& exception);
+    static std::string GetLastErrorAsString();
 };

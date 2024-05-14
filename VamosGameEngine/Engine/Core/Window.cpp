@@ -57,26 +57,25 @@ bool Window::Initialize(Engine* pEngine, HINSTANCE hInstance, std::string window
     return true;
 }
 
+Window::~Window()
+{
+    if (this->handle != NULL)
+    {
+        UnregisterClass(this->window_class_wide.c_str(), this->hInstance);
+        DestroyWindow(handle);
+    }
+}
+
 bool Window::ProcessMessages()
 {
     // Handle the windows messages.
     MSG msg;
     ZeroMemory(&msg, sizeof(MSG)); // Initialize the message structure.
 
-    while (PeekMessage(
-        &msg,
-        //Where to store message (if one exists) See: https://msdn.microsoft.com/en-us/library/windows/desktop/ms644943(v=vs.85).aspx
-        this->handle, //Handle to window we are checking messages for
-        0,
-        //Minimum Filter Msg Value - We are not filtering for specific messages, but the min/max could be used to filter only mouse messages for example.
-        0, //Maximum Filter Msg Value
-        PM_REMOVE))
-    //Remove message after capturing it via PeekMessage. For more argument options, see: https://msdn.microsoft.com/en-us/library/windows/desktop/ms644943(v=vs.85).aspx
+    while (PeekMessage(&msg, this->handle, 0, 0, PM_REMOVE))
     {
         TranslateMessage(&msg);
-        //Translate message from virtual key messages into character messages so we can dispatch the message. See: https://msdn.microsoft.com/en-us/library/windows/desktop/ms644955(v=vs.85).aspx
         DispatchMessage(&msg);
-        //Dispatch message to our Window Proc for this window. See: https://msdn.microsoft.com/en-us/library/windows/desktop/ms644934(v=vs.85).aspx
     }
 
     // Check if the window was closed
@@ -91,15 +90,6 @@ bool Window::ProcessMessages()
     }
 
     return true;
-}
-
-Window::~Window()
-{
-    if (this->handle != NULL)
-    {
-        UnregisterClass(this->window_class_wide.c_str(), this->hInstance);
-        DestroyWindow(handle);
-    }
 }
 
 LRESULT CALLBACK HandleMsgRedirect(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

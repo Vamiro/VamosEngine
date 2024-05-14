@@ -67,8 +67,11 @@ void InputDevice::MouseEvent(RawMouseEventArgs args)
 
 	POINT p;
 	GetCursorPos(&p);
-	ScreenToClient(engine_->GetWindow().GetHWND(), &p);
-	
+	if(!ScreenToClient(engine_->GetWindow().GetHWND(), &p))
+	{
+		ErrorLogger::Log(ErrorLogger::GetLastErrorAsString());
+	}
+
 	MousePosition	= Vector2(p.x, p.y);
 	MouseOffset		= Vector2(args.X, args.Y);
 	MouseWheelDelta = args.WheelDelta;

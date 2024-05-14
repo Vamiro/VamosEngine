@@ -9,8 +9,8 @@ public:
 	Engine();
 	LRESULT WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM LParam);
 
-	[[nodiscard]] Window GetWindow() const { return window_; }
-	[[nodiscard]] InputDevice GetInputDevice() const { return input_device_; }
+	[[nodiscard]] Window& GetWindow()  { return window_; }
+	[[nodiscard]] InputDevice& GetInputDevice() { return input_device_; }
 	//[[nodiscard]] Graphics GetGraphics() const { return gfx_; }
 
 protected:

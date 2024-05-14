@@ -4,7 +4,7 @@
 #include <DirectXTK/SpriteBatch.h>
 #include <DirectXTK/SpriteFont.h>
 #include <DirectXTK/WICTextureLoader.h>
-#include "camera.h"
+#include "Engine/Rendering/Camera.h"
 #include "Engine/Utilities/Timer.h"
 #include "Engine/Rendering/GameObject.h"
 
@@ -44,8 +44,8 @@ private:
     Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerStateCullFront;
     Microsoft::WRL::ComPtr<ID3D11BlendState> blendState;
 
-    std::unique_ptr<DirectX::SpriteBatch> spriteBatch;
-    std::unique_ptr<DirectX::SpriteFont> spriteFont;
+    std::unique_ptr<SpriteBatch> spriteBatch;
+    std::unique_ptr<SpriteFont> spriteFont;
 
     Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pinkTexture;

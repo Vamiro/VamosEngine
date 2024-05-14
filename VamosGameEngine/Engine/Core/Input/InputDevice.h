@@ -26,6 +26,7 @@ public:
 	DirectX::SimpleMath::Vector2 MousePosition;
 	DirectX::SimpleMath::Vector2 MouseOffset;
 	int MouseWheelDelta;
+	float MouseSensitivity = 0.001f;
 
 	MulticastDelegate<const MouseMoveEventArgs&>& OnMouseMove() { return onMouseMove_; }
 	MulticastDelegate<const InputKey&>& OnKeyDown() { return onKeyDown_; }

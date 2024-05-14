@@ -62,7 +62,7 @@ void Graphics::RenderFrame()
                            DirectX::Colors::White, 0.0f, DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT2(1.0f, 1.0f));
     spriteBatch->End();
 
-    static int counter = 0;
+    
     // Start the Dear ImGui frame
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
@@ -220,7 +220,8 @@ bool Graphics::InitializeDirectX(HWND hwnd)
 
 bool Graphics::InitializeShaders()
 {
-    std::wstring shaderpath = L"..\\x64\\Debug";
+    //Load shaders
+    std::wstring shaderpath = L"Engine\\Data\\Shaders";
     D3D11_INPUT_ELEMENT_DESC layout[] =
     {
         {
@@ -234,7 +235,7 @@ bool Graphics::InitializeShaders()
     };
     UINT numElements = ARRAYSIZE(layout);
 
-
+    //Create vertex and pixel shaders
     if (!vertexshader.Initialize(this->device, shaderpath + L"\\vertexshader.cso", layout, numElements))
         return false;
 
@@ -249,15 +250,15 @@ bool Graphics::InitializeScene()
 {
     try
     {
-        HRESULT hr = CreateWICTextureFromFile(this->device.Get(), L"Data\\Textures\\grass.jpg", nullptr,
+        HRESULT hr = CreateWICTextureFromFile(this->device.Get(), L"Engine\\Data\\Textures\\grass.jpg", nullptr,
                                               this->grassTexture.GetAddressOf());
         ErrorLogger::Log(hr, "Failed to create texture.");
 
-        hr = CreateWICTextureFromFile(this->device.Get(), L"Data\\Textures\\pink.png", nullptr,
+        hr = CreateWICTextureFromFile(this->device.Get(), L"Engine\\Data\\Textures\\pink.png", nullptr,
                                       this->pinkTexture.GetAddressOf());
         ErrorLogger::Log(hr, "Failed to create texture.");
 
-        hr = CreateWICTextureFromFile(this->device.Get(), L"Data\\Textures\\pavement.jpg", nullptr,
+        hr = CreateWICTextureFromFile(this->device.Get(), L"Engine\\Data\\Textures\\pavement.jpg", nullptr,
                                       this->pavementTexture.GetAddressOf());
         ErrorLogger::Log(hr, "Failed to create texture.");
 
@@ -266,7 +267,7 @@ bool Graphics::InitializeScene()
         hr = cb_ps_pixelshader.Initialize(this->device.Get(), this->deviceContext.Get());
         ErrorLogger::Log(hr, "Failed to create pixelshader constant buffer.");
 
-        if (!gameObject.Initialize("Data\\Objects\\frog\\datboi.obj", this->device.Get(), this->deviceContext.Get(),
+        if (!gameObject.Initialize("Engine\\Data\\Objects\\frog\\datboi.obj", this->device.Get(), this->deviceContext.Get(),
                                    this->cb_vs_vertexshader))
         {
             return false;

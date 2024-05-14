@@ -1,5 +1,7 @@
 #include "GameEngine.h"
 
+#include <iostream>
+
 bool GameEngine::Initialize(HINSTANCE hInstance, std::string window_title, std::string window_class, int width,
                             int height)
 {
@@ -12,6 +14,13 @@ bool GameEngine::Initialize(HINSTANCE hInstance, std::string window_title, std::
     {
         return false;
     }
+    
+    input_device_.OnMouseMove().AddLambda([&](const InputDevice::MouseMoveEventArgs& args) {
+        std::cout << "Mouse Position: (" << args.Position.x << ", " << args.Position.y << ")" << std::endl;
+        std::cout << "Mouse Offset: (" << args.Offset.x << ", " << args.Offset.y << ")" << std::endl;
+        gfx_.camera.AdjustRotation(args.Offset.y * input_device_.MouseSensitivity, args.Offset.x * input_device_.MouseSensitivity, 0.0f);
+    });
+    
     return true;
 }
 
@@ -33,8 +42,7 @@ void GameEngine::Update()
     {
         return;
     }
-
-    float mouseSensitivity = 0.01f;
+    
     constexpr float cameraSpeed = 0.002f;
     constexpr float rotationSpeed = 0.002f;
 
@@ -54,14 +62,21 @@ void GameEngine::Update()
     {
         gfx_.camera.AdjustPosition(gfx_.camera.GetRightVector() * cameraSpeed * dt);
     }
+    if (input_device_.IsKeyDown(InputKey::Q))
+    {
+        gfx_.camera.AdjustPosition(gfx_.camera.GetUpVector() * cameraSpeed * dt);
+    }
+    if (input_device_.IsKeyDown(InputKey::E))
+    {
+        gfx_.camera.AdjustPosition(gfx_.camera.GetUpVector() * cameraSpeed * dt * -1.0f);
+    }
 
     gfx_.gameObject.AdjustRotation(0.0f, rotationSpeed * dt, 0.0f);
 
-    if (input_device_.IsMouseMoved())
-    {
-        SimpleMath::Vector2 mousePosition = input_device_.MousePosition;
-        gfx_.camera.AdjustRotation(0.0f, -mousePosition.y * mouseSensitivity, mousePosition.x * mouseSensitivity);
-    }
+    // if (input_device_.IsMouseMoved())
+    // {
+    //     SimpleMath::Vector2 mousePosition = input_device_.MousePosition;
+    // }
 }
 
 void GameEngine::RenderFrame()
