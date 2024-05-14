@@ -2,6 +2,8 @@
 #include "model.h"
 #include <DirectXMath.h>
 
+//TODO: Use simple math library and quaternions
+
 using namespace DirectX;
 
 class GameObject

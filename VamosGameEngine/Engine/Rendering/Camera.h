@@ -1,6 +1,8 @@
 #pragma once
 #include <DirectXMath.h>
 
+//TODO: Use simple math library and quaternions for camera
+
 using namespace DirectX;
 
 class Camera

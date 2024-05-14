@@ -1,6 +1,7 @@
 ﻿#include "Window.h"
-
 #include "Engine.h"
+
+//TODO: Add support for fullscreen mode, write comments
 
 bool Window::Initialize(Engine* pEngine, HINSTANCE hInstance, std::string window_title,
                         std::string window_class, int width, int height)

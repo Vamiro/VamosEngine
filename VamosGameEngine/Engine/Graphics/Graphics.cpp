@@ -4,6 +4,8 @@
 #include <ImGUI/imgui_impl_dx11.h>
 #include <ImGUI/imgui_impl_win32.h>
 
+//TODO: Implement method for game objects to be rendered in the scene
+
 bool Graphics::Initialize(HWND hwnd, int width, int height)
 {
     this->windowHeight = height;
