@@ -110,5 +110,5 @@ bool InputDevice::IsKeyDown(InputKey key)
 
 bool InputDevice::IsMouseMoved()
 {
-    return MousePosition != Vector2::Zero;
+    return MouseOffset != Vector2::Zero;
 }

@@ -1,15 +1,15 @@
 #include "Mesh.h"
 
-Mesh::Mesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, std::vector<Vertex>& vertices, std::vector<DWORD>& indices,std::vector<Texture> &textures)
+Mesh::Mesh(Microsoft::WRL::ComPtr<ID3D11Device> device, Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext, std::vector<Vertex>& vertices, std::vector<DWORD>& indices,std::vector<Texture> &textures)
 {
     this->deviceContext = deviceContext;
     this->textures = textures;
 
-    HRESULT hr = this->vertexbuffer.Initialize(device, vertices.data(), vertices.size());
-    COM_ERROR_IF_FAILED(hr, "Failed to initialize vertex buffer for mesh.");
+    HRESULT hr = this->vertexbuffer.Initialize(device.Get(), vertices.data(), vertices.size());
+    ErrorLogger::Log(hr, "Failed to initialize vertex buffer for mesh.");
 
-    hr = this->indexbuffer.Initialize(device, indices.data(), indices.size());
-    COM_ERROR_IF_FAILED(hr, "Failed to initialize index buffer for mesh.");
+    hr = this->indexbuffer.Initialize(device.Get(), indices.data(), indices.size());
+    ErrorLogger::Log(hr, "Failed to initialize index buffer for mesh.");
 }
 
 Mesh::Mesh(const Mesh& mesh)

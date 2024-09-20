@@ -11,12 +11,12 @@
 class Mesh
 {
 public:
-    Mesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext, std::vector<Vertex>& vertices, std::vector<DWORD>& indices, std::vector<Texture>& textures);
+    Mesh(Microsoft::WRL::ComPtr<ID3D11Device> device, Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext, std::vector<Vertex>& vertices, std::vector<DWORD>& indices, std::vector<Texture>& textures);
     Mesh(const Mesh& mesh);
     void Draw();
 private:
     VertexBuffer<Vertex> vertexbuffer;
     IndexBuffer indexbuffer;
-    ID3D11DeviceContext* deviceContext;
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext  = nullptr;
     std::vector<Texture> textures;
 };

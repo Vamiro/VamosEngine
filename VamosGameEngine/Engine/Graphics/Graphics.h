@@ -11,20 +11,23 @@
 class Graphics
 {
 public:
-    GameObject gameObject;
     bool Initialize(HWND hwnd, int width, int height);
     void RenderFrame();
     void SetLookAt(float x, float y, float z);
     void UnSetLookAt();
-    Camera camera;
     bool blockInputForImGui = false;
+    std::vector<GameObject*> gameObjects;
+    Camera camera;
+    Microsoft::WRL::ComPtr<ID3D11Device> GetDevice() { return device; }
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext> GetDeviceContext() { return deviceContext; }
+    int GetWindowHeight() const { return windowHeight; }
+    int GetWindowWidth() const { return windowWidth; }
 
 private:
     Timer fpsTimer;
     bool lookAt = false;
     bool InitializeDirectX(HWND hwnd);
     bool InitializeShaders();
-    bool InitializeScene();
     int windowWidth = 0;
     int windowHeight = 0;
     Microsoft::WRL::ComPtr<ID3D11Device> device;
@@ -33,8 +36,6 @@ private:
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView;
     VertexShader vertexshader;
     PixelShader pixelshader;
-    ConstantBuffer<CB_VS_VertexShader> cb_vs_vertexshader;
-    ConstantBuffer<CB_PS_PixelShader> cb_ps_pixelshader;
 
     Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
     Microsoft::WRL::ComPtr<ID3D11Texture2D> depthStencilBuffer;
@@ -48,7 +49,4 @@ private:
     std::unique_ptr<SpriteFont> spriteFont;
 
     Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
-    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pinkTexture;
-    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> grassTexture;
-    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pavementTexture;
 };

@@ -8,6 +8,17 @@ public:
     bool ProcessMessages();
     void Update();
     void RenderFrame();
+    bool InitializeScene() override;
+
 private:
     Timer timer;
+
+    ConstantBuffer<CB_VS_VertexShader> cb_vs_vertexshader;
+    ConstantBuffer<CB_PS_PixelShader> cb_ps_pixelshader;
+
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pinkTexture;
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> grassTexture;
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pavementTexture;
+
+    GameObject* gameObject;
 };

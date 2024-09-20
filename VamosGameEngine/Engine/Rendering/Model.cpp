@@ -1,10 +1,12 @@
 #include "Model.h"
 
-bool Model::Initialize(const std::string& filePath, ID3D11Device* device, ID3D11DeviceContext* deviceContext,
+#include <utility>
+
+bool Model::Initialize(const std::string& filePath, const Microsoft::WRL::ComPtr<ID3D11Device>& device, const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext,
                        ConstantBuffer<CB_VS_VertexShader>& cb_vs_vertexshader)
 {
-    this->device = device;
-    this->deviceContext = deviceContext;
+    this->device = device.Get();
+    this->deviceContext = deviceContext.Get();
     this->cb_vs_vertexshader = &cb_vs_vertexshader;
 
     try
@@ -82,10 +84,10 @@ std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* pMaterial, aiTextur
             if (aiColor.IsBlack()) //If color = black, just use grey
             {
                 materialTextures.push_back(
-                    Texture(this->device, DirectX::SimpleMath::Color(100, 100, 100), textureType));
+                    Texture(this->device.Get(), DirectX::SimpleMath::Color(100, 100, 100), textureType));
                 return materialTextures;
             }
-            materialTextures.push_back(Texture(this->device,
+            materialTextures.push_back(Texture(this->device.Get(),
                                                DirectX::SimpleMath::Color(
                                                    aiColor.r * 255, aiColor.g * 255, aiColor.b * 255), textureType));
             return materialTextures;
@@ -103,14 +105,14 @@ std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* pMaterial, aiTextur
             case TextureStorageType::Disk:
                 {
                     std::string fileName = this->directory + "\\" + path.C_Str();
-                    Texture diskTexture(this->device, fileName, textureType);
+                    Texture diskTexture(this->device.Get(), fileName, textureType);
                     materialTextures.push_back(diskTexture);
                     break;
                 }
             case TextureStorageType::EmbeddedCompressed:
                 {
                     const aiTexture* pTexture = pScene->GetEmbeddedTexture(path.C_Str());
-                    Texture embeddedTexture(this->device, reinterpret_cast<uint8_t*>(pTexture->pcData),
+                    Texture embeddedTexture(this->device.Get(), reinterpret_cast<uint8_t*>(pTexture->pcData),
                                             pTexture->mWidth, textureType);
                     materialTextures.push_back(embeddedTexture);
                     break;
@@ -118,7 +120,7 @@ std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* pMaterial, aiTextur
             case TextureStorageType::EmbeddedIndexCompressed:
                 {
                     int index = GetTextureIndex(&path);
-                    Texture embeddedIndexedTexture(this->device,
+                    Texture embeddedIndexedTexture(this->device.Get(),
                                                    reinterpret_cast<uint8_t*>(pScene->mTextures[index]->pcData),
                                                    pScene->mTextures[index]->mWidth,
                                                    textureType);
@@ -130,7 +132,7 @@ std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* pMaterial, aiTextur
     }
     if (materialTextures.size() == 0)
     {
-        materialTextures.push_back(Texture(this->device, DirectX::SimpleMath::Color(250, 0, 0),
+        materialTextures.push_back(Texture(this->device.Get(), DirectX::SimpleMath::Color(250, 0, 0),
                                            aiTextureType_DIFFUSE));
     }
     return materialTextures;

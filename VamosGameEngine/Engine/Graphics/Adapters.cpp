@@ -9,7 +9,6 @@ std::vector<AdapterData> Adapters::GetAdapters()
 
     Microsoft::WRL::ComPtr<IDXGIFactory> pFactory;
 
-    // Create a DXGIFactory object.
     HRESULT hr = CreateDXGIFactory(__uuidof(IDXGIFactory), reinterpret_cast<void**>(pFactory.GetAddressOf()));
     if (FAILED(hr))
     {

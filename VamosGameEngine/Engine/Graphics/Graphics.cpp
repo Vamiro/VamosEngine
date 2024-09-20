@@ -11,12 +11,11 @@ bool Graphics::Initialize(HWND hwnd, int width, int height)
     this->windowHeight = height;
     this->windowWidth = width;
     this->fpsTimer.Start();
+    
     if (!InitializeDirectX(hwnd))
         return false;
 
     if (!InitializeShaders())
-        return false;
-    if (!InitializeScene())
         return false;
 
     IMGUI_CHECKVERSION();
@@ -45,8 +44,9 @@ void Graphics::RenderFrame()
     this->deviceContext->VSSetShader(vertexshader.GetShader(), NULL, 0);
     this->deviceContext->PSSetShader(pixelshader.GetShader(), NULL, 0);
 
+    for (const auto go : this->gameObjects)
     {
-        this->gameObject.Draw(camera.GetViewMatrix() * camera.GetProjectionMatrix());
+        go->Draw(camera.GetViewMatrix() * camera.GetProjectionMatrix());
     }
 
     //Draw Text
@@ -126,7 +126,7 @@ bool Graphics::InitializeDirectX(HWND hwnd)
         hr = D3D11CreateDeviceAndSwapChain(adapters[0].pAdapter, //IDXGI Adapter
                                            D3D_DRIVER_TYPE_UNKNOWN,
                                            NULL, //FOR SOFTWARE DRIVER TYPE
-                                           NULL, //FLAGS FOR RUNTIME LAYERS
+                                           D3D11_CREATE_DEVICE_DEBUG, //FLAGS FOR RUNTIME LAYERS
                                            NULL, //FEATURE LEVELS ARRAY
                                            0, //# OF FEATURE LEVELS IN ARRAY
                                            D3D11_SDK_VERSION,
@@ -202,7 +202,7 @@ bool Graphics::InitializeDirectX(HWND hwnd)
         ErrorLogger::Log(hr, "Failed to create blend state.");
 
         spriteBatch = std::make_unique<DirectX::SpriteBatch>(this->deviceContext.Get());
-        spriteFont = std::make_unique<DirectX::SpriteFont>(this->device.Get(), L"Engine\\Data\\Fonts\\comicsans_ms_16.spritefont");
+        spriteFont = std::make_unique<DirectX::SpriteFont>(this->device.Get(), L"Data\\Fonts\\comicsans_ms_16.spritefont");
 
         //Create sampler description for sampler state
         CD3D11_SAMPLER_DESC sampDesc(D3D11_DEFAULT);
@@ -223,7 +223,7 @@ bool Graphics::InitializeDirectX(HWND hwnd)
 bool Graphics::InitializeShaders()
 {
     //Load shaders
-    std::wstring shaderpath = L"Engine\\Data\\Shaders";
+    std::wstring shaderpath = L"Data\\Shaders";
     D3D11_INPUT_ELEMENT_DESC layout[] =
     {
         {
@@ -245,45 +245,5 @@ bool Graphics::InitializeShaders()
         return false;
 
 
-    return true;
-}
-
-bool Graphics::InitializeScene()
-{
-    try
-    {
-        HRESULT hr = CreateWICTextureFromFile(this->device.Get(), L"Engine\\Data\\Textures\\grass.jpg", nullptr,
-                                              this->grassTexture.GetAddressOf());
-        ErrorLogger::Log(hr, "Failed to create texture.");
-
-        hr = CreateWICTextureFromFile(this->device.Get(), L"Engine\\Data\\Textures\\pink.png", nullptr,
-                                      this->pinkTexture.GetAddressOf());
-        ErrorLogger::Log(hr, "Failed to create texture.");
-
-        hr = CreateWICTextureFromFile(this->device.Get(), L"Engine\\Data\\Textures\\pavement.jpg", nullptr,
-                                      this->pavementTexture.GetAddressOf());
-        ErrorLogger::Log(hr, "Failed to create texture.");
-
-        hr = cb_vs_vertexshader.Initialize(this->device.Get(), this->deviceContext.Get());
-        ErrorLogger::Log(hr, "Failed to create vertexshader constant buffer.");
-        hr = cb_ps_pixelshader.Initialize(this->device.Get(), this->deviceContext.Get());
-        ErrorLogger::Log(hr, "Failed to create pixelshader constant buffer.");
-
-        if (!gameObject.Initialize("Engine\\Data\\Objects\\frog\\datboi.obj", this->device.Get(), this->deviceContext.Get(),
-                                   this->cb_vs_vertexshader))
-        {
-            return false;
-        }
-        gameObject.SetPosition(2.0f, 0.0f, 0.0f);
-
-        camera.SetPosition(0.0f, 0.0f, -2.0f);
-        camera.SetProjectionValues(90.0f, static_cast<float>(windowWidth) / static_cast<float>(windowHeight), 0.1f,
-                                   1000.0f);
-    }
-    catch (COMException& exception)
-    {
-        ErrorLogger::Log(exception);
-        return false;
-    }
     return true;
 }

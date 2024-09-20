@@ -5,7 +5,7 @@
 class Model
 {
 public:
-    bool Initialize(const std::string& filePath, ID3D11Device* device, ID3D11DeviceContext* deviceContext,
+    bool Initialize(const std::string& filePath, const Microsoft::WRL::ComPtr<ID3D11Device>& device, const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext,
                     ConstantBuffer<CB_VS_VertexShader>& cb_vs_vertexshader);
     void Draw(const DirectX::XMMATRIX& worldMatrix, const DirectX::XMMATRIX& viewProjectionMatrix);
 
@@ -19,9 +19,9 @@ private:
                                                    aiTextureType textureType);
     int GetTextureIndex(aiString* pStr);
 
-    ID3D11Device* device = nullptr;
-    ID3D11DeviceContext* deviceContext = nullptr;
+    Microsoft::WRL::ComPtr<ID3D11Device> device;
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext;
 
-    ConstantBuffer<CB_VS_VertexShader>* cb_vs_vertexshader = nullptr;
+    ConstantBuffer<CB_VS_VertexShader>* cb_vs_vertexshader;
     std::string directory = "";
 };
