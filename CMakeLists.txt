@@ -73,7 +73,9 @@ add_executable(VamosGameEngine WIN32
         VamosGameEngine/Engine/Apps/PongApp.cpp
         VamosGameEngine/Engine/Apps/PongApp.h
         VamosGameEngine/Engine/Components/Transform.cpp
-        VamosGameEngine/Engine/Components/Transform.h)
+        VamosGameEngine/Engine/Components/Transform.h
+        VamosGameEngine/Engine/Graphics/ShaderManager.cpp
+        VamosGameEngine/Engine/Graphics/ShaderManager.h)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 

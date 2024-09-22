@@ -11,6 +11,7 @@ bool Graphics::Initialize(HWND hwnd, int width, int height)
     this->windowHeight = height;
     this->windowWidth = width;
     this->fpsTimer.Start();
+    this->shaderManager = new ShaderManager(this);
     
     if (!InitializeDirectX(hwnd))
         return false;
@@ -30,19 +31,18 @@ bool Graphics::Initialize(HWND hwnd, int width, int height)
 
 void Graphics::RenderFrame()
 {
-    float bgcolor[] = {0.0f, 0.0f, 0.0f, 1.0f};
+    float bgcolor[] = {1.0f, 1.0f, 1.0f, 1.0f};
     this->deviceContext->ClearRenderTargetView(this->renderTargetView.Get(), bgcolor);
     this->deviceContext->ClearDepthStencilView(this->depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
                                                1.0f, 0);
+    shaderManager->SetShader(ShaderData("Data\\Shaders\\simpleShader.hlsl", PixelType | VertexType));
 
-    this->deviceContext->IASetInputLayout(this->vertexshader.GetInputLayout());
-    this->deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+    this->deviceContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     this->deviceContext->RSSetState(this->rasterizerState.Get());
     this->deviceContext->OMSetDepthStencilState(this->depthStencilState.Get(), 0);
     this->deviceContext->OMSetBlendState(NULL, NULL, 0xFFFFFFFF);
     this->deviceContext->PSSetSamplers(0, 1, this->samplerState.GetAddressOf());
-    this->deviceContext->VSSetShader(vertexshader.GetShader(), NULL, 0);
-    this->deviceContext->PSSetShader(pixelshader.GetShader(), NULL, 0);
 
     for (const auto go : this->gameObjects)
     {
@@ -222,28 +222,6 @@ bool Graphics::InitializeDirectX(HWND hwnd)
 
 bool Graphics::InitializeShaders()
 {
-    //Load shaders
-    std::wstring shaderpath = L"Data\\Shaders";
-    D3D11_INPUT_ELEMENT_DESC layout[] =
-    {
-        {
-            "POSITION", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,
-            D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0
-        },
-        {
-            "TEXCOORD", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32_FLOAT, 0,D3D11_APPEND_ALIGNED_ELEMENT,
-            D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0
-        }
-    };
-    UINT numElements = ARRAYSIZE(layout);
-
-    //Create vertex and pixel shaders
-    if (!vertexshader.Initialize(this->device, shaderpath + L"\\vertexshader.cso", layout, numElements))
-        return false;
-
-    if (!pixelshader.Initialize(this->device, shaderpath + L"\\pixelshader.cso"))
-        return false;
-
-
+    shaderManager->InitShader(ShaderData("Data\\Shaders\\simpleShader.hlsl", PixelType | VertexType));
     return true;
 }

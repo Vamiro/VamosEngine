@@ -4,6 +4,8 @@
 #include <DirectXTK/SpriteBatch.h>
 #include <DirectXTK/SpriteFont.h>
 #include <DirectXTK/WICTextureLoader.h>
+
+#include "ShaderManager.h"
 #include "Engine/Rendering/Camera.h"
 #include "Engine/Utilities/Timer.h"
 #include "Engine/Rendering/GameObject.h"
@@ -18,6 +20,7 @@ public:
     bool blockInputForImGui = false;
     std::vector<GameObject*> gameObjects;
     Camera camera;
+    ShaderManager* shaderManager;
     Microsoft::WRL::ComPtr<ID3D11Device> GetDevice() { return device; }
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> GetDeviceContext() { return deviceContext; }
     int GetWindowHeight() const { return windowHeight; }

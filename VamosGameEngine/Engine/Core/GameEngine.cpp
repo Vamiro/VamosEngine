@@ -47,6 +47,10 @@ void GameEngine::Update()
         return;
     }
 
+    // Установка шейдера
+    gfx_.shaderManager->SetShader(ShaderData("Data\\Shaders\\simpleShader.hlsl", PixelType | VertexType));
+
+
     gfx_.camera.UpdateViewMatrix();
     constexpr float cameraSpeed = 0.002f;
     constexpr float rotationSpeed = 0.002f;
@@ -81,6 +85,18 @@ void GameEngine::Update()
 
 void GameEngine::RenderFrame()
 {
+    // Обновление буфера для вершинного шейдера
+    CB_VS_VertexShader vsBufferData;
+    vsBufferData.mat = gfx_.camera.transform.GetWorldMatrix() * gfx_.camera.GetViewMatrix() * gfx_.camera.GetProjectionMatrix();  // Объединение матриц
+    cb_vs_vertexshader.data = vsBufferData;
+    cb_vs_vertexshader.ApplyChanges(0);  // Применение изменений
+
+    // Обновление буфера для пиксельного шейдера
+    CB_PS_PixelShader psBufferData;
+    psBufferData.alpha = 1.0f;  // Можно менять прозрачность
+    cb_ps_pixelshader.data = psBufferData;
+    cb_ps_pixelshader.ApplyChanges(0);  // Применение изменений
+
     gfx_.RenderFrame();
 }
 
