@@ -5,9 +5,9 @@ GameObject::GameObject(): model()
 }
 
 bool GameObject::Initialize(const std::string& filePath, const Microsoft::WRL::ComPtr<ID3D11Device>& device, const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext,
-                            ConstantBuffer<CB_VS_VertexShader>& cb_vs_vertexshader)
+                            ConstantBuffer<CB_VS_VertexShader>& cb_vs_vertexshader, ConstantBuffer<CB_PS_PixelShader>& cb_ps_pixelshader)
 {
-    if (!model.Initialize(filePath, device.Get(), deviceContext.Get(), cb_vs_vertexshader))
+    if (!model.Initialize(filePath, device.Get(), deviceContext.Get(), cb_vs_vertexshader, cb_ps_pixelshader))
     {
         return false;
     }
@@ -20,5 +20,12 @@ bool GameObject::Initialize(const std::string& filePath, const Microsoft::WRL::C
 
 void GameObject::Draw(const XMMATRIX& viewProjectionMatrix)
 {
-    model.Draw(this->transform.GetWorldMatrix(), viewProjectionMatrix);
+    if(color != nullptr)
+    {
+        model.Draw(this->transform.GetWorldMatrix(), viewProjectionMatrix, color);
+    }
+    else
+    {
+        model.Draw(this->transform.GetWorldMatrix(), viewProjectionMatrix);
+    }
 }

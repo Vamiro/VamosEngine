@@ -85,18 +85,6 @@ void GameEngine::Update()
 
 void GameEngine::RenderFrame()
 {
-    // Обновление буфера для вершинного шейдера
-    CB_VS_VertexShader vsBufferData;
-    vsBufferData.mat = gfx_.camera.transform.GetWorldMatrix() * gfx_.camera.GetViewMatrix() * gfx_.camera.GetProjectionMatrix();  // Объединение матриц
-    cb_vs_vertexshader.data = vsBufferData;
-    cb_vs_vertexshader.ApplyChanges(0);  // Применение изменений
-
-    // Обновление буфера для пиксельного шейдера
-    CB_PS_PixelShader psBufferData;
-    psBufferData.alpha = 1.0f;  // Можно менять прозрачность
-    cb_ps_pixelshader.data = psBufferData;
-    cb_ps_pixelshader.ApplyChanges(0);  // Применение изменений
-
     gfx_.RenderFrame();
 }
 
@@ -124,11 +112,11 @@ bool GameEngine::InitializeScene()
         hr = cb_ps_pixelshader.Initialize(d3d_device.Get(), d3d_device_context.Get());
         ErrorLogger::Log(hr, "Failed to create pixelshader constant buffer.");
 
-
-
-        gameObject->Initialize("Data\\Objects\\frog\\datboi.obj", d3d_device.Get(), d3d_device_context.Get(), this->cb_vs_vertexshader);
+        gameObject->Initialize("Data\\Objects\\frog\\DATBOI.obj", d3d_device.Get(),
+            d3d_device_context.Get(), this->cb_vs_vertexshader, this->cb_ps_pixelshader);
 
         gameObject->transform.SetPosition(2.0f, 0.0f, 0.0f);
+        gameObject->SetColor(SimpleMath::Color(1.0f, 1.0f, 0.0f, 1.0f));
 
         gfx_.gameObjects.emplace_back(gameObject);
 

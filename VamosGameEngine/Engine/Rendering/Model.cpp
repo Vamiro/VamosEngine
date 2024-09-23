@@ -1,13 +1,13 @@
 #include "Model.h"
-
 #include <utility>
 
 bool Model::Initialize(const std::string& filePath, const Microsoft::WRL::ComPtr<ID3D11Device>& device, const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext,
-                       ConstantBuffer<CB_VS_VertexShader>& cb_vs_vertexshader)
+                       ConstantBuffer<CB_VS_VertexShader>& cb_vs_vertexshader, ConstantBuffer<CB_PS_PixelShader>& cb_ps_pixelshader)
 {
     this->device = device.Get();
     this->deviceContext = deviceContext.Get();
     this->cb_vs_vertexshader = &cb_vs_vertexshader;
+    this->cb_ps_pixelshader = &cb_ps_pixelshader;
 
     try
     {
@@ -23,7 +23,8 @@ bool Model::Initialize(const std::string& filePath, const Microsoft::WRL::ComPtr
     return true;
 }
 
-void Model::Draw(const DirectX::XMMATRIX& worldMatrix, const DirectX::XMMATRIX& viewProjectionMatrix)
+void Model::Draw(const DirectX::XMMATRIX& worldMatrix, const DirectX::XMMATRIX& viewProjectionMatrix,
+    DirectX::SimpleMath::Color color)
 {
     //Update Constant buffer with WVP Matrix
     this->cb_vs_vertexshader->data.mat = worldMatrix * viewProjectionMatrix; //Calculate World-View-Projection Matrix
@@ -31,13 +32,20 @@ void Model::Draw(const DirectX::XMMATRIX& worldMatrix, const DirectX::XMMATRIX& 
     this->cb_vs_vertexshader->ApplyChanges(0);
     this->deviceContext->VSSetConstantBuffers(0, 1, this->cb_vs_vertexshader->GetAddressOf());
 
+    // Обновите буфер пиксельного шейдера с цветом объекта
+    CB_PS_PixelShader psBufferData;
+    psBufferData.objectColor = color; // Преобразование в float4
+    cb_ps_pixelshader->data = psBufferData; // Предполагая, что у вас есть cb_ps_pixelshader
+    cb_ps_pixelshader->ApplyChanges(0); // Применение изменений
+
+    // Установка буфера перед отрисовкой
+    this->deviceContext->PSSetConstantBuffers(1, 1, cb_ps_pixelshader->GetAddressOf());
 
     for (DWORD i = 0; i < meshes.size(); i++)
     {
         meshes[i].Draw();
     }
 }
-
 
 bool Model::LoadModel(const std::string filePath)
 {
