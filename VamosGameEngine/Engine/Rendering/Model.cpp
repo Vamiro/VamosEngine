@@ -88,17 +88,19 @@ std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* pMaterial, aiTextur
         switch (textureType)
         {
         case aiTextureType_DIFFUSE:
-            pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, aiColor);
-            if (aiColor.IsBlack()) //If color = black, just use grey
+            if (pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, aiColor) == AI_SUCCESS)
             {
-                materialTextures.push_back(
-                    Texture(this->device.Get(), DirectX::SimpleMath::Color(100, 100, 100), textureType));
+                DirectX::SimpleMath::Color color;
+
+                if (aiColor.IsBlack())
+                    color = DirectX::SimpleMath::Color(1.0f, 1.0f, 1.0f, 1.0f);
+                else
+                    color = DirectX::SimpleMath::Color(aiColor.r, aiColor.g, aiColor.b, 1.0f);
+
+                materialTextures.push_back(Texture(this->device.Get(), color, textureType));
                 return materialTextures;
             }
-            materialTextures.push_back(Texture(this->device.Get(),
-                                               DirectX::SimpleMath::Color(
-                                                   aiColor.r * 255, aiColor.g * 255, aiColor.b * 255), textureType));
-            return materialTextures;
+            break;
         }
     }
     else

@@ -4,6 +4,8 @@
 #include <ImGUI/imgui_impl_dx11.h>
 #include <ImGUI/imgui_impl_win32.h>
 
+#include "Engine/Core/Engine.h"
+
 //TODO: Implement method for game objects to be rendered in the scene
 
 bool Graphics::Initialize(HWND hwnd, int width, int height)
@@ -64,18 +66,7 @@ void Graphics::RenderFrame()
                            DirectX::Colors::White, 0.0f, DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT2(1.0f, 1.0f));
     spriteBatch->End();
 
-    
-    // Start the Dear ImGui frame
-    ImGui_ImplDX11_NewFrame();
-    ImGui_ImplWin32_NewFrame();
-    ImGui::NewFrame();
-    //Create ImGui Test Window
-    ImGui::Begin("Test");
-    ImGui::End();
-    //Assemble Together Draw Data
-    ImGui::Render();
-    //Render Draw Data
-    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+    _engine->RenderGui();
 
     this->swapChain->Present(0, NULL);
 }

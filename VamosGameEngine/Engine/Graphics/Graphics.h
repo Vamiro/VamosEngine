@@ -10,9 +10,12 @@
 #include "Engine/Utilities/Timer.h"
 #include "Engine/Rendering/GameObject.h"
 
+class Engine;
+
 class Graphics
 {
 public:
+    Graphics(Engine* engine) : _engine(engine) {};
     bool Initialize(HWND hwnd, int width, int height);
     void RenderFrame();
     void SetLookAt(float x, float y, float z);
@@ -27,6 +30,7 @@ public:
     int GetWindowWidth() const { return windowWidth; }
 
 private:
+    Engine* _engine = nullptr;
     Timer fpsTimer;
     bool lookAt = false;
     bool InitializeDirectX(HWND hwnd);

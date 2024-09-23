@@ -1,6 +1,6 @@
 ﻿#include "Engine.h"
 
-Engine::Engine(): input_device_(this), gfx_()
+Engine::Engine(): input_device_(this), gfx_(this)
 {
 }
 

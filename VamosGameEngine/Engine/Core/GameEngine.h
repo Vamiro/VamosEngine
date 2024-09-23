@@ -1,13 +1,18 @@
 #pragma once
+#include <ImGUI/imgui.h>
+#include <ImGUI/imgui_impl_dx11.h>
+#include <ImGUI/imgui_impl_win32.h>
+
 #include "Engine.h"
 #include "Engine/Utilities/Timer.h"
 
 class GameEngine : Engine {
 public:
     bool Initialize(HINSTANCE hInstance, std::string window_title, std::string window_class, int width, int height); 
-    bool ProcessMessages();
-    void Update();
-    void RenderFrame();
+    bool ProcessMessages() override;
+    void Update() override;
+    void RenderFrame() override;
+    void RenderGui() override;
     bool InitializeScene() override;
 
 private:
@@ -21,4 +26,5 @@ private:
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pavementTexture;
 
     GameObject* gameObject;
+    SimpleMath::Color objectColor = SimpleMath::Color(1.0f, 1.0f, 1.0f, 1.0f);
 };

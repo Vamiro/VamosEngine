@@ -50,7 +50,6 @@ void GameEngine::Update()
     // Установка шейдера
     gfx_.shaderManager->SetShader(ShaderData("Data\\Shaders\\simpleShader.hlsl", PixelType | VertexType));
 
-
     gfx_.camera.UpdateViewMatrix();
     constexpr float cameraSpeed = 0.002f;
     constexpr float rotationSpeed = 0.002f;
@@ -88,6 +87,25 @@ void GameEngine::RenderFrame()
     gfx_.RenderFrame();
 }
 
+void GameEngine::RenderGui()
+{
+    ImGui_ImplDX11_NewFrame();
+    ImGui_ImplWin32_NewFrame();
+    ImGui::NewFrame();
+
+    ImGui::Begin("GUI");
+    ImGui::Text("FPS: %.2f", ImGui::GetIO().Framerate);
+    ImGui::ColorEdit4("Object Color", reinterpret_cast<float*>(&objectColor));
+
+    ImGui::End();
+
+    ImGui::Render();
+    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+    // Устанавливаем цвет объекта в зависимости от значения слайдера
+    gameObject->SetColor(objectColor);
+}
+
 bool GameEngine::InitializeScene()
 {
     try
@@ -95,32 +113,25 @@ bool GameEngine::InitializeScene()
         Microsoft::WRL::ComPtr<ID3D11Device> d3d_device = gfx_.GetDevice();
         Microsoft::WRL::ComPtr<ID3D11DeviceContext> d3d_device_context = gfx_.GetDeviceContext();
 
-        HRESULT hr = CreateWICTextureFromFile(d3d_device.Get(), L"Data\\Textures\\grass.jpg", nullptr,
-                                              this->grassTexture.GetAddressOf());
-        ErrorLogger::Log(hr, "Failed to create texture.");
-
-        hr = CreateWICTextureFromFile(d3d_device.Get(), L"Data\\Textures\\pink.png", nullptr,
-                                      this->pinkTexture.GetAddressOf());
-        ErrorLogger::Log(hr, "Failed to create texture.");
-
-        hr = CreateWICTextureFromFile(d3d_device.Get(), L"Data\\Textures\\pavement.jpg", nullptr,
-                                      this->pavementTexture.GetAddressOf());
-        ErrorLogger::Log(hr, "Failed to create texture.");
-
-        hr = cb_vs_vertexshader.Initialize(d3d_device.Get(), d3d_device_context.Get());
+        HRESULT hr = cb_vs_vertexshader.Initialize(d3d_device.Get(), d3d_device_context.Get());
         ErrorLogger::Log(hr, "Failed to create vertexshader constant buffer.");
         hr = cb_ps_pixelshader.Initialize(d3d_device.Get(), d3d_device_context.Get());
         ErrorLogger::Log(hr, "Failed to create pixelshader constant buffer.");
 
-        gameObject->Initialize("Data\\Objects\\frog\\DATBOI.obj", d3d_device.Get(),
+        gameObject->Initialize("Data\\Objects\\sphere.obj", d3d_device.Get(),
             d3d_device_context.Get(), this->cb_vs_vertexshader, this->cb_ps_pixelshader);
-
-        gameObject->transform.SetPosition(2.0f, 0.0f, 0.0f);
-        gameObject->SetColor(SimpleMath::Color(1.0f, 1.0f, 0.0f, 1.0f));
+        gameObject->transform.SetPosition(-2.0f, 0.0f, 4.0f);
 
         gfx_.gameObjects.emplace_back(gameObject);
 
-        gfx_.camera.transform.SetPosition(0.0f, 0.0f, -2.0f);
+        gameObject->Initialize("Data\\Objects\\sphere.obj", d3d_device.Get(),
+            d3d_device_context.Get(), this->cb_vs_vertexshader, this->cb_ps_pixelshader);
+
+        gameObject->transform.SetPosition(2.0f, 0.0f, 4.0f);
+
+        gfx_.gameObjects.emplace_back(gameObject);
+
+        gfx_.camera.transform.SetPosition(0.0f, 0.0f, 0.0f);
         gfx_.camera.SetProjectionValues(90.0f, static_cast<float>(gfx_.GetWindowWidth()) / static_cast<float>(gfx_.GetWindowHeight()), 0.1f,
                                    1000.0f);
     }
