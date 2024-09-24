@@ -3,3 +3,8 @@
 //
 
 #include "BoxObject.h"
+
+
+BoxObject::BoxObject(const std::string& name)  : GameObject(name), boundingBox()
+{
+}

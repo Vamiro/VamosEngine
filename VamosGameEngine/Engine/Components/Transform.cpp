@@ -1,24 +1,42 @@
 ﻿#include "Transform.h"
 
+#include "SimpleMath.h"
+
 
 Transform::Transform()
 {
     this->pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
     this->posVector = XMLoadFloat3(&this->pos);
+
     this->rot = XMFLOAT3(0.0f, 0.0f, 0.0f);
     this->rotVector = XMLoadFloat3(&this->rot);
+
+    this->scale = XMFLOAT3(1.0f, 1.0f, 1.0f);
+    this->scaleVector = XMLoadFloat3(&this->scale);
 }
 
 void Transform::UpdateWorldMatrix()
 {
-    this->worldMatrix = XMMatrixRotationRollPitchYaw(this->rot.x, this->rot.y, this->rot.z) * XMMatrixTranslation(
-        this->pos.x, this->pos.y, this->pos.z);
-    XMMATRIX vecRotationMatrix = XMMatrixRotationRollPitchYaw(this->rot.x, this->rot.y, this->rot.z);
-    this->vec_forward = XMVector3TransformCoord(this->DEFAULT_FORWARD_VECTOR, vecRotationMatrix);
-    this->vec_backward = XMVector3TransformCoord(this->DEFAULT_BACKWARD_VECTOR, vecRotationMatrix);
-    this->vec_left = XMVector3TransformCoord(this->DEFAULT_LEFT_VECTOR, vecRotationMatrix);
-    this->vec_right = XMVector3TransformCoord(this->DEFAULT_RIGHT_VECTOR, vecRotationMatrix);
-    this->vec_up = XMVector3TransformCoord(this->DEFAULT_UP_VECTOR, vecRotationMatrix);
+    XMMATRIX scaleMatrix = XMMatrixScaling(this->scale.x, this->scale.y, this->scale.z);
+    XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(this->rot.x, this->rot.y, this->rot.z);
+    XMMATRIX translationMatrix = XMMatrixTranslation(this->pos.x, this->pos.y, this->pos.z);
+
+    // Объединяем матрицы: масштаб, потом вращение, потом перевод
+    this->worldMatrix = scaleMatrix * rotationMatrix * translationMatrix;
+
+    // Обновляем векторы направления
+    this->vec_forward = XMVector3TransformCoord(this->DEFAULT_FORWARD_VECTOR, rotationMatrix);
+    this->vec_backward = XMVector3TransformCoord(this->DEFAULT_BACKWARD_VECTOR, rotationMatrix);
+    this->vec_left = XMVector3TransformCoord(this->DEFAULT_LEFT_VECTOR, rotationMatrix);
+    this->vec_right = XMVector3TransformCoord(this->DEFAULT_RIGHT_VECTOR, rotationMatrix);
+    this->vec_up = XMVector3TransformCoord(this->DEFAULT_UP_VECTOR, rotationMatrix);
+}
+
+XMVECTOR Transform::DegreesToRadians(const float x, const float y, const float z)
+{
+    XMVECTOR degrees = XMVectorSet(x, y, z, 0.0f);
+    degrees = degrees * XM_PI / 180;
+    return degrees;
 }
 
 const XMVECTOR& Transform::GetPositionVector() const
@@ -29,6 +47,16 @@ const XMVECTOR& Transform::GetPositionVector() const
 const XMFLOAT3& Transform::GetPositionFloat3() const
 {
     return this->pos;
+}
+
+const XMVECTOR& Transform::GetScaleVector() const
+{
+    return this->scaleVector;
+}
+
+const XMFLOAT3& Transform::GetScaleFloat3() const
+{
+    return this->scale;
 }
 
 const XMVECTOR& Transform::GetRotationVector() const
@@ -84,6 +112,52 @@ void Transform::AdjustPosition(float x, float y, float z)
     this->pos.y += y;
     this->pos.z += z;
     this->posVector = XMLoadFloat3(&this->pos);
+    this->UpdateWorldMatrix();
+}
+
+void Transform::SetScale(const XMVECTOR& scale)
+{
+    XMStoreFloat3(&this->scale, scale);
+    this->scaleVector = scale;
+    this->UpdateWorldMatrix();
+}
+
+void Transform::SetScale(const XMFLOAT3& scale)
+{
+    this->scale = scale;
+    this->scaleVector = XMLoadFloat3(&this->scale);
+    this->UpdateWorldMatrix();
+}
+
+void Transform::SetScale(float x, float y, float z)
+{
+    this->scale = XMFLOAT3(x, y, z);
+    this->scaleVector = XMLoadFloat3(&this->scale);
+    this->UpdateWorldMatrix();
+}
+
+void Transform::AdjustScale(const XMVECTOR& scale)
+{
+    this->scaleVector += scale;
+    XMStoreFloat3(&this->scale, this->scaleVector);
+    this->UpdateWorldMatrix();
+}
+
+void Transform::AdjustScale(const XMFLOAT3& scale)
+{
+    this->scale.x += scale.x;
+    this->scale.y += scale.y;
+    this->scale.z += scale.z;
+    this->scaleVector = XMLoadFloat3(&this->scale);
+    this->UpdateWorldMatrix();
+}
+
+void Transform::AdjustScale(float x, float y, float z)
+{
+    this->scale.x += x;
+    this->scale.y += y;
+    this->scale.z += z;
+    this->scaleVector = XMLoadFloat3(&this->scale);
     this->UpdateWorldMatrix();
 }
 

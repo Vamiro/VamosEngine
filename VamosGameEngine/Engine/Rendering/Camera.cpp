@@ -1,14 +1,23 @@
 #include "Camera.h"
 
+#include "SimpleMath.h"
+
 Camera::Camera()
 {
     this->UpdateViewMatrix();
 }
 
-void Camera::SetProjectionValues(float fovDegrees, float aspectRatio, float nearZ, float farZ)
+void Camera::SetProjectionValues(float fovDegrees, float aspectRatio, float nearZ, float farZ, ProjectionType type)
 {
     float fovRadians = (fovDegrees / 360.0f) * XM_2PI;
-    this->projectionMatrix = XMMatrixPerspectiveFovLH(fovRadians, aspectRatio, nearZ, farZ);
+
+    if (type & PERSPECTIVE)
+    {
+        this->projectionMatrix = XMMatrixPerspectiveFovLH(fovRadians, aspectRatio, nearZ, farZ);
+    } else if (type & ORTHOGRAPHIC)
+    {
+        this->projectionMatrix = XMMatrixOrthographicLH(fovDegrees, fovDegrees/aspectRatio, nearZ, farZ);
+    }
 }
 
 const XMMATRIX& Camera::GetViewMatrix() const

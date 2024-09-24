@@ -1,12 +1,7 @@
 ﻿
 #include "SphereObject.h"
 
-SphereObject::SphereObject(const std::string& name)  : GameObject(name)
+SphereObject::SphereObject(const std::string& name)  : GameObject(name), boundingSphere()
 {
-}
-
-void SphereObject::Update()
-{
-    boundingSphere.Center = transform.GetPositionFloat3();
 }
 

@@ -95,11 +95,16 @@ void TestApp::RenderGui()
         gameObjects.size());
 
     SimpleMath::Color currentColor = gameObjects[currentGameObj]->GetColor();
+
     XMFLOAT3 currentPos = gameObjects[currentGameObj]->transform.GetPositionFloat3();
     float pos[3] = {currentPos.x, currentPos.y, currentPos.z};
 
+    XMFLOAT3 currentScale = gameObjects[currentGameObj]->transform.GetScaleFloat3();
+    float scale[3] = {currentScale.x, currentScale.y, currentScale.z};
+
     ImGui::ColorEdit4("Object Color", reinterpret_cast<float*>(&currentColor));
     ImGui::DragFloat3("Position", pos, 0.1f);
+    ImGui::DragFloat3("Scale", scale, 0.1f);
 
     ImGui::End();
 
@@ -109,6 +114,7 @@ void TestApp::RenderGui()
     // Устанавливаем цвет объекта в зависимости от значения слайдера
     gameObjects[currentGameObj]->SetColor(currentColor);
     gameObjects[currentGameObj]->transform.SetPosition(XMFLOAT3(pos));
+    gameObjects[currentGameObj]->transform.SetScale(XMFLOAT3(scale));
 }
 
 bool TestApp::InitializeScene()
@@ -142,7 +148,7 @@ bool TestApp::InitializeScene()
 
         gfx_.camera.transform.SetPosition(0.0f, 0.0f, 0.0f);
         gfx_.camera.SetProjectionValues(90.0f, static_cast<float>(gfx_.GetWindowWidth()) / static_cast<float>(gfx_.GetWindowHeight()), 0.1f,
-                                   1000.0f);
+                                   1000.0f, PERSPECTIVE);
     }
     catch (COMException& exception)
     {

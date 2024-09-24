@@ -17,7 +17,6 @@ public:
                     ConstantBuffer<CB_VS_VertexShader>& cb_vs_vertexshader, ConstantBuffer<CB_PS_PixelShader>& cb_ps_pixelshader);
 
     void Draw(const XMMATRIX& viewProjectionMatrix);
-    virtual void Update();
 
     [[nodiscard]] SimpleMath::Color GetColor() const { return color; };
     void SetColor(const SimpleMath::Color& value) { color = value; }

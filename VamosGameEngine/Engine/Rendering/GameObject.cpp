@@ -28,9 +28,4 @@ void GameObject::Draw(const XMMATRIX& viewProjectionMatrix)
     {
         model.Draw(this->transform.GetWorldMatrix(), viewProjectionMatrix);
     }
-    Update();
-}
-
-void GameObject::Update()
-{
 }
