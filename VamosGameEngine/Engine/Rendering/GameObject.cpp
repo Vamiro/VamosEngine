@@ -1,6 +1,6 @@
 #include "GameObject.h"
 
-GameObject::GameObject(): model()
+GameObject::GameObject(const std::string& name) : name(name), model()
 {
 }
 
@@ -28,4 +28,9 @@ void GameObject::Draw(const XMMATRIX& viewProjectionMatrix)
     {
         model.Draw(this->transform.GetWorldMatrix(), viewProjectionMatrix);
     }
+    Update();
+}
+
+void GameObject::Update()
+{
 }

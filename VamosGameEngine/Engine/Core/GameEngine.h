@@ -6,16 +6,13 @@
 #include "Engine.h"
 #include "Engine/Utilities/Timer.h"
 
-class GameEngine : Engine {
+class GameEngine : public Engine {
 public:
-    bool Initialize(HINSTANCE hInstance, std::string window_title, std::string window_class, int width, int height); 
+    bool Initialize(HINSTANCE hInstance, std::string window_title, std::string window_class, int width, int height) override;
     bool ProcessMessages() override;
-    void Update() override;
     void RenderFrame() override;
-    void RenderGui() override;
-    bool InitializeScene() override;
 
-private:
+protected:
     Timer timer;
 
     ConstantBuffer<CB_VS_VertexShader> cb_vs_vertexshader;
@@ -25,6 +22,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> grassTexture;
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pavementTexture;
 
-    GameObject* gameObject;
-    SimpleMath::Color objectColor = SimpleMath::Color(1.0f, 1.0f, 1.0f, 1.0f);
+    std::vector<GameObject*> gameObjects;
+    int currentGameObj = 0;
+    BoundingSphere boundingSphere;
 };

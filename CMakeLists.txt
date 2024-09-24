@@ -70,12 +70,19 @@ add_executable(VamosGameEngine WIN32
         VamosGameEngine/ThirdParty/ImGUI/imstb_textedit.h
         VamosGameEngine/ThirdParty/ImGUI/imstb_truetype.h
         VamosGameEngine/VamosGameEngine.cpp
-        VamosGameEngine/Engine/Apps/PongApp.cpp
-        VamosGameEngine/Engine/Apps/PongApp.h
         VamosGameEngine/Engine/Components/Transform.cpp
         VamosGameEngine/Engine/Components/Transform.h
         VamosGameEngine/Engine/Graphics/ShaderManager.cpp
-        VamosGameEngine/Engine/Graphics/ShaderManager.h)
+        VamosGameEngine/Engine/Graphics/ShaderManager.h
+        VamosGameEngine/Engine/Apps/PongApp/GameObjects/SphereObject.cpp
+        VamosGameEngine/Engine/Apps/PongApp/GameObjects/SphereObject.h
+        VamosGameEngine/Engine/Apps/TestApp/TestApp.cpp
+        VamosGameEngine/Engine/Apps/TestApp/TestApp.h
+        VamosGameEngine/Engine/Apps/PongApp/PongApp.cpp
+        VamosGameEngine/Engine/Apps/PongApp/PongApp.h
+        VamosGameEngine/Engine/Apps/PongApp/GameObjects/BoxObject.cpp
+        VamosGameEngine/Engine/Apps/PongApp/GameObjects/BoxObject.h
+)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
