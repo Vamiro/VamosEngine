@@ -33,7 +33,7 @@ bool Graphics::Initialize(HWND hwnd, int width, int height)
 
 void Graphics::RenderFrame()
 {
-    float bgcolor[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    float bgcolor[] = {0.5f, 0.5f, 0.5f, 1.0f};
     this->deviceContext->ClearRenderTargetView(this->renderTargetView.Get(), bgcolor);
     this->deviceContext->ClearDepthStencilView(this->depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
                                                1.0f, 0);
@@ -50,21 +50,6 @@ void Graphics::RenderFrame()
     {
         go->Draw(camera.GetViewMatrix() * camera.GetProjectionMatrix());
     }
-
-    //Draw Text
-    static int fpsCounter = 0;
-    static std::string fpsString = "FPS: 0";
-    fpsCounter += 1;
-    if (fpsTimer.GetMilisecondsElapsed() > 1000.0)
-    {
-        fpsString = "FPS: " + std::to_string(fpsCounter);
-        fpsCounter = 0;
-        fpsTimer.Restart();
-    }
-    spriteBatch->Begin();
-    spriteFont->DrawString(spriteBatch.get(), StringHelper::StringToWide(fpsString).c_str(), DirectX::XMFLOAT2(0, 0),
-                           DirectX::Colors::White, 0.0f, DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT2(1.0f, 1.0f));
-    spriteBatch->End();
 
     _engine->RenderGui();
 
@@ -193,7 +178,7 @@ bool Graphics::InitializeDirectX(HWND hwnd)
         ErrorLogger::Log(hr, "Failed to create blend state.");
 
         spriteBatch = std::make_unique<DirectX::SpriteBatch>(this->deviceContext.Get());
-        spriteFont = std::make_unique<DirectX::SpriteFont>(this->device.Get(), L"Data\\Fonts\\comicsans_ms_16.spritefont");
+        spriteFont = std::make_unique<DirectX::SpriteFont>(this->device.Get(), L"Data\\Fonts\\pixel.spritefont");
 
         //Create sampler description for sampler state
         CD3D11_SAMPLER_DESC sampDesc(D3D11_DEFAULT);

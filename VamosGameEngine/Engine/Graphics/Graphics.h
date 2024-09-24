@@ -29,6 +29,9 @@ public:
     int GetWindowHeight() const { return windowHeight; }
     int GetWindowWidth() const { return windowWidth; }
 
+    SpriteBatch* GetSpriteBatch() const { return spriteBatch.get(); }
+    SpriteFont* GetSpriteFont() const { return spriteFont.get(); }
+
 private:
     Engine* _engine = nullptr;
     Timer fpsTimer;

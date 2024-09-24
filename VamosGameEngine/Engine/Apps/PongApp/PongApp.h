@@ -8,16 +8,20 @@ public:
     bool Initialize(HINSTANCE hInstance, std::string window_title, std::string window_class, int width,
                     int height) override;
     void Update() override;
+    void ResetBall();
     void RenderGui() override;
     bool InitializeScene() override;
 
 private:
-    float Speed = 0.01f;
-    float currentSpeed = Speed;
+    SimpleMath::Vector3 speed = SimpleMath::Vector3(0.015f, 0.0f, 0.015f);
+    SimpleMath::Vector3 currentSpeed = speed;
     SphereObject* ball;
 
     BoxObject* playerLeft;
     BoxObject* playerRight;
+
+    int scoreLeft = 0;
+    int scoreRight = 0;
 
     BoxObject* wallTop;
     BoxObject* wallBottom;

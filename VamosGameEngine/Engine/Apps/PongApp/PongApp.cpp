@@ -9,7 +9,7 @@ bool PongApp::Initialize(HINSTANCE hInstance, std::string window_title, std::str
 
 void PongApp::Update()
 {
-    float dt = timer.GetMilisecondsElapsed();
+     float dt = timer.GetMilisecondsElapsed();
     timer.Restart();
 
     if (this->gfx_.blockInputForImGui)
@@ -17,35 +17,82 @@ void PongApp::Update()
         return;
     }
 
-    if (input_device_.IsKeyDown(InputKey::LeftShift) || input_device_.IsKeyDown(InputKey::RightShift))
-    {
-        return;
-    }
-    gfx_.shaderManager->SetShader(ShaderData("Data\\Shaders\\simpleShader.hlsl", PixelType | VertexType));
+    if (input_device_.IsKeyDown(InputKey::W) &&
+        playerRight->transform.GetPositionFloat3().z + playerRight->transform.GetScaleFloat3().z < wallTop->transform.GetPositionFloat3().z)
+        playerRight->transform.AdjustPosition(0, 0, 0.01f * dt);
 
-    if (input_device_.IsKeyDown(InputKey::W)) playerRight->transform.AdjustPosition(0, 0, 0.01f * dt);
-    if (input_device_.IsKeyDown(InputKey::S)) playerRight->transform.AdjustPosition(0, 0, -0.01f * dt);
-    if (input_device_.IsKeyDown(InputKey::Up)) playerLeft->transform.AdjustPosition(0, 0, 0.01f * dt);
-    if (input_device_.IsKeyDown(InputKey::Down)) playerLeft->transform.AdjustPosition(0, 0, -0.01f * dt);
+    if (input_device_.IsKeyDown(InputKey::S) &&
+        playerRight->transform.GetPositionFloat3().z - playerRight->transform.GetScaleFloat3().z > wallBottom->transform.GetPositionFloat3().z)
+        playerRight->transform.AdjustPosition(0, 0, -0.01f * dt);
 
-    ball->transform.AdjustPosition(currentSpeed * dt, 0.0f, 0.0f);
+    if (input_device_.IsKeyDown(InputKey::Up) &&
+        playerLeft->transform.GetPositionFloat3().z + playerLeft->transform.GetScaleFloat3().z < wallTop->transform.GetPositionFloat3().z)
+        playerLeft->transform.AdjustPosition(0, 0, 0.01f * dt);
 
+    if (input_device_.IsKeyDown(InputKey::Down) &&
+        playerLeft->transform.GetPositionFloat3().z - playerLeft->transform.GetScaleFloat3().z > wallBottom->transform.GetPositionFloat3().z)
+        playerLeft->transform.AdjustPosition(0, 0, -0.01f * dt);
+
+    // Движение мяча
+    ball->transform.AdjustPosition(currentSpeed.x * dt, 0.0f, currentSpeed.z * dt);
+
+    // Обновление Bounding
     ball->SetBoundingCenter(ball->transform.GetPositionFloat3());
     playerLeft->SetBoundingCenter(playerLeft->transform.GetPositionFloat3());
     playerRight->SetBoundingCenter(playerRight->transform.GetPositionFloat3());
-
+    //Jolt
     if (ball->GetBoundingSphere().Intersects(playerLeft->GetBoundingBox()))
     {
-        currentSpeed = Speed * -1;
+        currentSpeed.x = -speed.x;
+        float offsetZ = ball->transform.GetPositionFloat3().z - playerLeft->transform.GetPositionFloat3().z;
+        currentSpeed.z = speed.z * offsetZ;
+        speed.z = abs(currentSpeed.z);
     }
 
     if (ball->GetBoundingSphere().Intersects(playerRight->GetBoundingBox()))
     {
-        currentSpeed = Speed;
+        currentSpeed.x = speed.x;
+        float offsetZ = ball->transform.GetPositionFloat3().z - playerRight->transform.GetPositionFloat3().z;
+        currentSpeed.z = speed.z * offsetZ;
+        speed.z = abs(currentSpeed.z);
+    }
+
+    if (ball->GetBoundingSphere().Intersects(wallTop->GetBoundingBox()))
+    {
+        currentSpeed.z = -speed.z;
+    }
+
+    if (ball->GetBoundingSphere().Intersects(wallBottom->GetBoundingBox()))
+    {
+        currentSpeed.z = speed.z;
+    }
+
+    if (ball->GetBoundingSphere().Intersects(wallRight->GetBoundingBox()))
+    {
+        scoreLeft++;
+        ResetBall();
+    }
+
+    if (ball->GetBoundingSphere().Intersects(wallLeft->GetBoundingBox()))
+    {
+        scoreRight++;
+        ResetBall();
     }
 
     gfx_.camera.UpdateViewMatrix();
+}
 
+void PongApp::ResetBall()
+{
+    ball->transform.SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
+
+    // Рандомное направление движения мяча
+    float randomDirectionX = (rand() % 2 == 0) ? 1.0f : -1.0f;  // Лево/право
+    float randomDirectionZ = (((rand() % 100) / 50.0f) - 1.0f) / 80.0f;  // Рандомный угол
+    randomDirectionZ = randomDirectionZ == 0.0f ? 0.15f : randomDirectionZ;
+
+    currentSpeed = SimpleMath::Vector3(speed.x * randomDirectionX, 0.0f, randomDirectionZ);
+    speed.z = abs(currentSpeed.z);
 }
 
 void PongApp::RenderGui()
@@ -89,7 +136,6 @@ void PongApp::RenderGui()
     ImGui::ColorEdit4("Object Color", reinterpret_cast<float*>(&currentColor));
     ImGui::DragFloat3("Position", pos, 0.1f);
     ImGui::DragFloat3("Scale", scale, 0.1f);
-    ImGui::SliderFloat("Speed", &Speed, 0.01f, 1.0f);
 
     ImGui::End();
 
@@ -100,6 +146,15 @@ void PongApp::RenderGui()
     gameObjects[currentGameObj]->SetColor(currentColor);
     gameObjects[currentGameObj]->transform.SetPosition(XMFLOAT3(pos));
     gameObjects[currentGameObj]->transform.SetScale(XMFLOAT3(scale));
+
+
+    gfx_.GetSpriteBatch()->Begin();
+    gfx_.GetSpriteFont()->DrawString(gfx_.GetSpriteBatch(), std::to_string(scoreLeft).c_str(), XMFLOAT2(250, 10),
+                           Colors::Blue, 0.0f, XMFLOAT2(0.0f, 0.0f), XMFLOAT2(4.0f, 4.0f));
+    gfx_.GetSpriteFont()->DrawString(gfx_.GetSpriteBatch(), std::to_string(scoreRight).c_str(), XMFLOAT2(500, 10),
+                           Colors::Red, 0.0f, XMFLOAT2(0.0f, 0.0f), XMFLOAT2(4.0f, 4.0f));
+    gfx_.GetSpriteBatch()->End();
+    //Direct2D
 }
 
 bool PongApp::InitializeScene()
@@ -118,13 +173,16 @@ bool PongApp::InitializeScene()
         ball = new SphereObject("Ball");
         ball->Initialize("Data\\Objects\\sphere.obj", d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader);
         ball->transform.SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
-        ball->SetBoundingSphereRadius(1.f);
+        ball->transform.SetScale(0.8f, 0.8f, 0.8f);
+        ball->SetColor(SimpleMath::Color(0.5f, 1.0f, 0.5f, 1.0f));
+        ball->SetBoundingSphereRadius(0.8f);
         gameObjects.emplace_back(ball);
 
         playerLeft = new BoxObject("PlayerRight");
         playerLeft->Initialize("Data\\Objects\\box.obj", d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader);
         playerLeft->transform.SetPosition(XMFLOAT3(12.0f, 0.0f, 0.0f));
         playerLeft->transform.SetScale(XMFLOAT3(0.2f, 2.0f, 2.0f));
+        playerLeft->SetColor(SimpleMath::Color(1.0f, 0.0f, 0.0f, 1.0f));
         playerLeft->SetBoundingBoxExtention(SimpleMath::Vector3(0.2f, 2.0f, 2.0f));
         gameObjects.emplace_back(playerLeft);
 
@@ -132,6 +190,7 @@ bool PongApp::InitializeScene()
         playerRight->Initialize("Data\\Objects\\box.obj", d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader);
         playerRight->transform.SetPosition(XMFLOAT3(-12.0f, 0.0f, 0.0f));
         playerRight->transform.SetScale(XMFLOAT3(0.2f, 2.0f, 2.0f));
+        playerRight->SetColor(SimpleMath::Color(0.0f, 0.0f, 1.0f, 1.0f));
         playerRight->SetBoundingBoxExtention(SimpleMath::Vector3(0.2f, 2.0f, 2.0f));
         gameObjects.emplace_back(playerRight);
 
@@ -140,6 +199,7 @@ bool PongApp::InitializeScene()
         wallTop->transform.SetPosition(XMFLOAT3(0.0f, 0.0f, 8.0f));
         wallTop->transform.SetScale(XMFLOAT3(14.0f, 2.0f, 0.2f));
         wallTop->SetBoundingBoxExtention(SimpleMath::Vector3(14.0f, 2.0f, 0.2f));
+        wallTop->SetBoundingCenter(wallTop->transform.GetPositionFloat3());
         gameObjects.emplace_back(wallTop);
 
         wallBottom = new BoxObject("wallBottom");
@@ -147,6 +207,7 @@ bool PongApp::InitializeScene()
         wallBottom->transform.SetPosition(XMFLOAT3(0.0f, 0.0f, -8.0f));
         wallBottom->transform.SetScale(XMFLOAT3(14.0f, 2.0f, 0.2f));
         wallBottom->SetBoundingBoxExtention(SimpleMath::Vector3(14.0f, 2.0f, 0.2f));
+        wallBottom->SetBoundingCenter(wallBottom->transform.GetPositionFloat3());
         gameObjects.emplace_back(wallBottom);
 
         wallLeft = new BoxObject("wallLeft");
@@ -155,6 +216,7 @@ bool PongApp::InitializeScene()
         wallLeft->transform.SetScale(XMFLOAT3(0.2f, 2.0f, 8.0f));
         wallLeft->SetBoundingBoxExtention(SimpleMath::Vector3(0.2f, 2.0f, 8.0f));
         wallLeft->SetColor(SimpleMath::Color(1.0f, 0.0f, 0.0f, 1.0f));
+        wallLeft->SetBoundingCenter(wallLeft->transform.GetPositionFloat3());
         gameObjects.emplace_back(wallLeft);
 
         wallRight = new BoxObject("wallRight");
@@ -162,8 +224,21 @@ bool PongApp::InitializeScene()
         wallRight->transform.SetPosition(XMFLOAT3(13.8f, -1.0f, 0.0f));
         wallRight->transform.SetScale(XMFLOAT3(0.2f, 2.0f, 8.0f));
         wallRight->SetBoundingBoxExtention(SimpleMath::Vector3(0.2f, 2.0f, 8.0f));
-        wallRight->SetColor(SimpleMath::Color(1.0f, 0.0f, 0.0f, 1.0f));
+        wallRight->SetColor(SimpleMath::Color(0.0f, 0.0f, 1.0f, 1.0f));
+        wallRight->SetBoundingCenter(wallRight->transform.GetPositionFloat3());
         gameObjects.emplace_back(wallRight);
+
+        gameObjects.emplace_back(new GameObject("object1"));
+        gameObjects[gameObjects.size() - 1]->Initialize("Data\\Objects\\box.obj", d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader);
+        gameObjects[gameObjects.size() - 1]->transform.SetPosition(XMFLOAT3(0.0f, -10.0f, 0.0f));
+        gameObjects[gameObjects.size() - 1]->transform.SetScale(XMFLOAT3(0.2f, 2.0f, 8.0f));
+        gameObjects[gameObjects.size() - 1]->SetColor(SimpleMath::Color(1.0f, 1.0f, 1.0f, 1.0f));
+
+        gameObjects.emplace_back(new GameObject("object2"));
+        gameObjects[gameObjects.size() - 1]->Initialize("Data\\Objects\\sphere.obj", d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader);
+        gameObjects[gameObjects.size() - 1]->transform.SetPosition(XMFLOAT3(0.0f, -10.0f, 0.0f));
+        gameObjects[gameObjects.size() - 1]->transform.SetScale(XMFLOAT3(2.0f, 2.0f, 2.0f));
+        gameObjects[gameObjects.size() - 1]->SetColor(SimpleMath::Color(1.0f, 1.0f, 1.0f, 1.0f));
 
         gfx_.gameObjects = gameObjects;
 
