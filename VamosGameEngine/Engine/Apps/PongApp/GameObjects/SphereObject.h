@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "Engine/Components/Model.h"
 #include "Engine/Rendering/GameObject.h"
 
 
@@ -10,6 +11,10 @@ public:
     void SetBoundingCenter(XMFLOAT3 value) { boundingSphere.Center = value; }
     void SetBoundingSphereRadius(const float radius) { boundingSphere.Radius = radius; }
 
+
 private:
-    BoundingSphere boundingSphere;
+    BoundingSphere* boundingSphere;
+    Model* Model;
+    Transform* Transform;
 };
+

@@ -40,8 +40,8 @@ add_executable(VamosGameEngine WIN32
         VamosGameEngine/Engine/Rendering/GameObject.h
         VamosGameEngine/Engine/Rendering/Mesh.cpp
         VamosGameEngine/Engine/Rendering/Mesh.h
-        VamosGameEngine/Engine/Rendering/Model.cpp
-        VamosGameEngine/Engine/Rendering/Model.h
+        VamosGameEngine/Engine/Components/Model.cpp
+        VamosGameEngine/Engine/Components/Model.h
         VamosGameEngine/Engine/Rendering/Texture.cpp
         VamosGameEngine/Engine/Rendering/Texture.h
         VamosGameEngine/Engine/Utilities/Delegate/Delegate.cpp

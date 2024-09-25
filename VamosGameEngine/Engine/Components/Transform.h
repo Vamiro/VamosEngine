@@ -7,7 +7,7 @@
 
 using namespace DirectX;
 
-class Transform : IComponent {
+class Transform : public IComponent {
 
 public:
     Transform();

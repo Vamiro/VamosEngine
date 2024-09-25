@@ -1,6 +1,7 @@
 #pragma once
-#include "model.h"
 #include <DirectXMath.h>
+#include <string>
+#include <vector>
 
 #include "Engine/Components/Transform.h"
 
@@ -11,20 +12,29 @@ using namespace DirectX;
 class GameObject
 {
 public:
-    explicit GameObject(const std::string& name);
-
-    bool Initialize(const std::string& filePath, const Microsoft::WRL::ComPtr<ID3D11Device>& device, const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext,
-                    ConstantBuffer<CB_VS_VertexShader>& cb_vs_vertexshader, ConstantBuffer<CB_PS_PixelShader>& cb_ps_pixelshader);
-
-    void Draw(const XMMATRIX& viewProjectionMatrix);
-
-    [[nodiscard]] SimpleMath::Color GetColor() const { return color; };
-    void SetColor(const SimpleMath::Color& value) { color = value; }
-
-    Transform transform;
     std::string name;
 
+    explicit GameObject(const std::string& name);
+
+    virtual void Update() = 0;
+    virtual void Render() = 0;
+
+    Transform transform;
+
+
+    template<typename T>
+    T* GetComponent()
+    {
+        for (IComponent* component : components)
+        {
+            if (T* castedComponent = dynamic_cast<T*>(component))
+            {
+                return castedComponent;
+            }
+        }
+        return nullptr;
+    }
+
 protected:
-    SimpleMath::Color color = {1.0f, 1.0f, 1.0f, 1.0f};
-    Model model;
+    std::vector<IComponent*> components;
 };
