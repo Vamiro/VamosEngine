@@ -4,12 +4,20 @@ bool PongApp::Initialize(HINSTANCE hInstance, std::string window_title, std::str
 {
     GameEngine::Initialize(hInstance, window_title, window_class, width, height);
 
+    input_device_.OnKeyDown() += [&](const InputKey& args)
+    {
+        if(args == InputKey::Escape)
+        {
+            isPaused = !isPaused;
+        }
+    };
+
     return true;
 }
 
 void PongApp::Update()
 {
-     float dt = timer.GetMilisecondsElapsed();
+    float dt = timer.GetMilisecondsElapsed();
     timer.Restart();
 
     if (this->gfx_.blockInputForImGui)
@@ -17,21 +25,32 @@ void PongApp::Update()
         return;
     }
 
+    if (input_device_.IsKeyDown(InputKey::LeftShift) || input_device_.IsKeyDown(InputKey::RightShift))
+    {
+        return;
+    }
+
+
+    if(isPaused)
+    {
+        return;
+    }
+
     if (input_device_.IsKeyDown(InputKey::W) &&
         playerRight->transform.GetPositionFloat3().z + playerRight->transform.GetScaleFloat3().z < wallTop->transform.GetPositionFloat3().z)
-        playerRight->transform.AdjustPosition(0, 0, 0.01f * dt);
+        playerRight->transform.AdjustPosition(0, 0, 0.013f * dt);
 
     if (input_device_.IsKeyDown(InputKey::S) &&
         playerRight->transform.GetPositionFloat3().z - playerRight->transform.GetScaleFloat3().z > wallBottom->transform.GetPositionFloat3().z)
-        playerRight->transform.AdjustPosition(0, 0, -0.01f * dt);
+        playerRight->transform.AdjustPosition(0, 0, -0.013f * dt);
 
     if (input_device_.IsKeyDown(InputKey::Up) &&
         playerLeft->transform.GetPositionFloat3().z + playerLeft->transform.GetScaleFloat3().z < wallTop->transform.GetPositionFloat3().z)
-        playerLeft->transform.AdjustPosition(0, 0, 0.01f * dt);
+        playerLeft->transform.AdjustPosition(0, 0, 0.013f * dt);
 
     if (input_device_.IsKeyDown(InputKey::Down) &&
         playerLeft->transform.GetPositionFloat3().z - playerLeft->transform.GetScaleFloat3().z > wallBottom->transform.GetPositionFloat3().z)
-        playerLeft->transform.AdjustPosition(0, 0, -0.01f * dt);
+        playerLeft->transform.AdjustPosition(0, 0, -0.013f * dt);
 
     // Движение мяча
     ball->transform.AdjustPosition(currentSpeed.x * dt, 0.0f, currentSpeed.z * dt);
@@ -45,16 +64,16 @@ void PongApp::Update()
     {
         currentSpeed.x = -speed.x;
         float offsetZ = ball->transform.GetPositionFloat3().z - playerLeft->transform.GetPositionFloat3().z;
-        currentSpeed.z = speed.z * offsetZ;
-        speed.z = abs(currentSpeed.z);
+        currentSpeed.z = offsetZ / playerRight->transform.GetScaleFloat3().z * maxSpeed;
+        speed.z = fabs(currentSpeed.z);
     }
 
     if (ball->GetBoundingSphere().Intersects(playerRight->GetBoundingBox()))
     {
         currentSpeed.x = speed.x;
         float offsetZ = ball->transform.GetPositionFloat3().z - playerRight->transform.GetPositionFloat3().z;
-        currentSpeed.z = speed.z * offsetZ;
-        speed.z = abs(currentSpeed.z);
+        currentSpeed.z = offsetZ / playerRight->transform.GetScaleFloat3().z * maxSpeed;
+        speed.z = fabs(currentSpeed.z);
     }
 
     if (ball->GetBoundingSphere().Intersects(wallTop->GetBoundingBox()))
@@ -90,9 +109,10 @@ void PongApp::ResetBall()
     float randomDirectionX = (rand() % 2 == 0) ? 1.0f : -1.0f;  // Лево/право
     float randomDirectionZ = (((rand() % 100) / 50.0f) - 1.0f) / 80.0f;  // Рандомный угол
     randomDirectionZ = randomDirectionZ == 0.0f ? 0.15f : randomDirectionZ;
+    randomDirectionZ = fabs(randomDirectionZ) >= maxSpeed ? speed.z : randomDirectionZ;
 
     currentSpeed = SimpleMath::Vector3(speed.x * randomDirectionX, 0.0f, randomDirectionZ);
-    speed.z = abs(currentSpeed.z);
+    speed.z = fabs(currentSpeed.z);
 }
 
 void PongApp::RenderGui()

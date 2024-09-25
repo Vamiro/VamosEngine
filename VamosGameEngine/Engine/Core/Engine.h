@@ -19,6 +19,8 @@ public:
 	[[nodiscard]] Graphics& GetGraphics() { return gfx_; }
 
 protected:
+	bool isClosed = false;
+	bool isPaused = false;
 	Window window_;
 	InputDevice input_device_;
 	Graphics gfx_;

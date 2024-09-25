@@ -13,6 +13,7 @@ public:
     bool InitializeScene() override;
 
 private:
+    float maxSpeed = 0.02f;
     SimpleMath::Vector3 speed = SimpleMath::Vector3(0.015f, 0.0f, 0.015f);
     SimpleMath::Vector3 currentSpeed = speed;
     SphereObject* ball;

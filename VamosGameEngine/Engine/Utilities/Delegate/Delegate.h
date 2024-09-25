@@ -846,6 +846,13 @@ public:
 		return Add(std::forward<DelegateT>(handler));
 	}
 
+	//Bind a lambda
+	template<typename LambdaType>
+	DelegateHandle operator+=(LambdaType&& lambda)
+	{
+		return Add(DelegateT::CreateLambda(std::forward<LambdaType>(lambda)));
+	}
+
 	//Remove a delegate using its DelegateHandle
 	bool operator-=(DelegateHandle& handle)
 	{
