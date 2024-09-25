@@ -10,14 +10,11 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
     if (game.Initialize(hInstance, "Vamos Game Engine", "VamosGameEngine", 800, 600))
     {
-        while (game.ProcessMessages())
+        while (!game.IsClosed())
         {
+            if (!game.ProcessMessages()) ErrorLogger::Log("Failed to process messages.");
             game.Update();
             game.RenderFrame();
-        }
-        if (!game.ProcessMessages())
-        {
-            ErrorLogger::Log("Failed to process messages.");
         }
     }
 }

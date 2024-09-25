@@ -82,6 +82,7 @@ add_executable(VamosGameEngine WIN32
         VamosGameEngine/Engine/Apps/PongApp/PongApp.h
         VamosGameEngine/Engine/Apps/PongApp/GameObjects/BoxObject.cpp
         VamosGameEngine/Engine/Apps/PongApp/GameObjects/BoxObject.h
+        VamosGameEngine/Engine/Components/IComponent.h
 )
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})

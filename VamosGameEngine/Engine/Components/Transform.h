@@ -3,9 +3,11 @@
 
 #include <DirectXMath.h>
 
+#include "IComponent.h"
+
 using namespace DirectX;
 
-class Transform {
+class Transform : IComponent {
 
 public:
     Transform();
@@ -60,6 +62,7 @@ public:
     const XMVECTOR DEFAULT_RIGHT_VECTOR = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
 
     static XMVECTOR DegreesToRadians(float x, float y, float z);
+    void RenderGUI() override;
 
 private:
     XMMATRIX worldMatrix = XMMatrixIdentity();

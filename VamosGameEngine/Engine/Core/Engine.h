@@ -17,6 +17,7 @@ public:
 	[[nodiscard]] Window& GetWindow() { return window_; }
 	[[nodiscard]] InputDevice& GetInputDevice() { return input_device_; }
 	[[nodiscard]] Graphics& GetGraphics() { return gfx_; }
+	bool IsClosed() const { return isClosed; }
 
 protected:
 	bool isClosed = false;

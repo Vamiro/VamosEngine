@@ -1,6 +1,7 @@
 ﻿#include "Transform.h"
 
 #include "SimpleMath.h"
+#include "ImGUI/imgui.h"
 
 
 Transform::Transform()
@@ -37,6 +38,11 @@ XMVECTOR Transform::DegreesToRadians(const float x, const float y, const float z
     XMVECTOR degrees = XMVectorSet(x, y, z, 0.0f);
     degrees = degrees * XM_PI / 180;
     return degrees;
+}
+
+void Transform::RenderGUI()
+{
+    
 }
 
 const XMVECTOR& Transform::GetPositionVector() const

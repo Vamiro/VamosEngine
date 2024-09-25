@@ -12,6 +12,14 @@ bool PongApp::Initialize(HINSTANCE hInstance, std::string window_title, std::str
         }
     };
 
+    input_device_.OnKeyDown() += [&](const InputKey& args)
+    {
+        if(args == InputKey::F4)
+        {
+            isClosed = true;
+        }
+    };
+
     return true;
 }
 
