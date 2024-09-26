@@ -1,14 +1,20 @@
 ﻿#pragma once
-#include "Engine/Rendering/GameObject.h"
+#include "Engine/Components/Model.h"
+#include "Engine/Components/BoxCollider.h"
+#include "../../../Core/Object.h"
+
+#include "Engine/Core/GameObject.h"
 
 class BoxObject : public GameObject {
 public:
-    explicit BoxObject(const std::string& name);
+    BoxObject(const std::string& name);
 
-    [[nodiscard]] BoundingBox GetBoundingBox() const { return boundingBox; }
-    void SetBoundingCenter(XMFLOAT3 value) { boundingBox.Center = value; }
-    void SetBoundingBoxExtention(const SimpleMath::Vector3 extents) { boundingBox.Extents = extents; }
+    void Destroy() override;
+
+    void Update(float deltaTime) override;
+    void Render(const SimpleMath::Matrix& viewProjectionMatrix) override;
 
 private:
-    BoundingBox boundingBox;
+    BoxCollider* boxCollider;
+    Model* model;
 };

@@ -2,7 +2,7 @@
 
 #include <unordered_set>
 #include "Key.h"
-#include "DirectXTK/SimpleMath.h"
+#include "SimpleMath.h"
 #include "Engine/Utilities/Delegate/Delegate.h"
 
 class Engine;
@@ -26,7 +26,7 @@ public:
 	DirectX::SimpleMath::Vector2 MousePosition;
 	DirectX::SimpleMath::Vector2 MouseOffset;
 	int MouseWheelDelta;
-	float MouseSensitivity = 0.001f;
+	float MouseSensitivity = 0.1f;
 
 	MulticastDelegate<const MouseMoveEventArgs&>& OnMouseMove() { return onMouseMove_; }
 	MulticastDelegate<const InputKey&>& OnKeyDown() { return onKeyDown_; }

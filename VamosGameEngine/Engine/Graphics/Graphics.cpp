@@ -33,23 +33,11 @@ bool Graphics::Initialize(HWND hwnd, int width, int height)
 
 void Graphics::RenderFrame()
 {
-    float bgcolor[] = {0.5f, 0.5f, 0.5f, 1.0f};
-    this->deviceContext->ClearRenderTargetView(this->renderTargetView.Get(), bgcolor);
-    this->deviceContext->ClearDepthStencilView(this->depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
-                                               1.0f, 0);
-    shaderManager->SetShader(ShaderData("Data\\Shaders\\simpleShader.hlsl", PixelType | VertexType));
-
-
     this->deviceContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     this->deviceContext->RSSetState(this->rasterizerState.Get());
     this->deviceContext->OMSetDepthStencilState(this->depthStencilState.Get(), 0);
     this->deviceContext->OMSetBlendState(NULL, NULL, 0xFFFFFFFF);
     this->deviceContext->PSSetSamplers(0, 1, this->samplerState.GetAddressOf());
-
-    for (const auto go : this->gameObjects)
-    {
-        go->Draw(camera.GetViewMatrix() * camera.GetProjectionMatrix());
-    }
 
     _engine->RenderGui();
 

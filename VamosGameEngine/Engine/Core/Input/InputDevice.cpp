@@ -3,8 +3,7 @@
 #include "Engine/Core/Engine.h"
 
 
-using namespace DirectX::SimpleMath;
-
+using namespace DirectX;
 
 InputDevice::InputDevice(Engine* engine) : engine_(engine), MouseWheelDelta(0)
 {
@@ -72,8 +71,8 @@ void InputDevice::MouseEvent(RawMouseEventArgs args)
     ScreenToClient(engine_->GetWindow().GetHWND(), &point);
 
 
-    MousePosition = Vector2(point.x, point.y);
-    MouseOffset = Vector2(args.X, args.Y);
+    MousePosition = SimpleMath::Vector2(point.x, point.y);
+    MouseOffset = SimpleMath::Vector2(args.X, args.Y);
     MouseWheelDelta = args.WheelDelta;
 
     const MouseMoveEventArgs moveArgs = {MousePosition, MouseOffset, MouseWheelDelta};
@@ -110,5 +109,5 @@ bool InputDevice::IsKeyDown(InputKey key)
 
 bool InputDevice::IsMouseMoved()
 {
-    return MouseOffset != Vector2::Zero;
+    return MouseOffset != SimpleMath::Vector2::Zero;
 }

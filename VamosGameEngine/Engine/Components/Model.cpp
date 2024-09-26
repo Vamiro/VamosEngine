@@ -23,7 +23,7 @@ bool Model::Initialize(const std::string& filePath, const Microsoft::WRL::ComPtr
     return true;
 }
 
-void Model::Draw(const DirectX::XMMATRIX& worldMatrix, const DirectX::XMMATRIX& viewProjectionMatrix)
+void Model::Draw(const DirectX::SimpleMath::Matrix& worldMatrix, const DirectX::SimpleMath::Matrix& viewProjectionMatrix)
 {
     //Update Constant buffer with WVP Matrix
     this->cb_vs_vertexshader->data.mat = worldMatrix * viewProjectionMatrix; //Calculate World-View-Projection Matrix
@@ -197,6 +197,7 @@ int Model::GetTextureIndex(aiString* pStr)
 
 void Model::RenderGUI()
 {
+    ImGui::ColorEdit4("Object Color", reinterpret_cast<float*>(&color));
 }
 
 Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* Scene)

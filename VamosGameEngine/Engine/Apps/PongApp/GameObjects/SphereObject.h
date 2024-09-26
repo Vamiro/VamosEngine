@@ -1,20 +1,20 @@
 ﻿#pragma once
 #include "Engine/Components/Model.h"
-#include "Engine/Rendering/GameObject.h"
+#include "Engine/Components/SphereCollider.h"
+#include "../../../Core/Object.h"
 
+#include "Engine/Core/GameObject.h"
 
 class SphereObject : public GameObject {
 public:
-    explicit SphereObject(const std::string& name);
+    SphereObject(const std::string& name);
 
-    [[nodiscard]] BoundingSphere GetBoundingSphere() const { return boundingSphere; }
-    void SetBoundingCenter(XMFLOAT3 value) { boundingSphere.Center = value; }
-    void SetBoundingSphereRadius(const float radius) { boundingSphere.Radius = radius; }
+    void Destroy() override;
 
+    void Update(float deltaTime) override;
+    void Render(const SimpleMath::Matrix& viewProjectionMatrix) override;
 
 private:
-    BoundingSphere* boundingSphere;
-    Model* Model;
-    Transform* Transform;
+    SphereCollider* sphereCollider;
+    Model* model;
 };
-

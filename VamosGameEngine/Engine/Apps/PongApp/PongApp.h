@@ -1,4 +1,7 @@
 ﻿#pragma once
+
+#include <DirectXColors.h>
+
 #include "Engine/Core/GameEngine.h"
 #include "GameObjects/BoxObject.h"
 #include "GameObjects/SphereObject.h"
@@ -18,15 +21,15 @@ private:
     SimpleMath::Vector3 currentSpeed = speed;
     SphereObject* ball;
 
-    BoxObject* playerLeft;
+    // BoxObject* playerLeft;
     BoxObject* playerRight;
 
     int scoreLeft = 0;
     int scoreRight = 0;
 
-    BoxObject* wallTop;
-    BoxObject* wallBottom;
-    BoxObject* wallLeft;
-    BoxObject* wallRight;
+    // BoxObject* wallTop;
+    // BoxObject* wallBottom;
+    // BoxObject* wallLeft;
+    // BoxObject* wallRight;
 };
 

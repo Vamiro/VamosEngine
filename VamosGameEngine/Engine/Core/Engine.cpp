@@ -12,6 +12,10 @@ LRESULT Engine::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         return true;
 
     switch (uMsg) {
+        case WM_DESTROY: {
+                isClosed = true;
+                return 0;
+            }
         case WM_INPUT: {
                 UINT dwSize = 0;
                 GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, nullptr, &dwSize, sizeof(RAWINPUTHEADER));

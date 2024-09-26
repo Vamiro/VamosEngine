@@ -1,7 +1,5 @@
 #include "Texture.h"
 
-
-
 Texture::Texture(ID3D11Device* device, const DirectX::SimpleMath::Color& color, aiTextureType type)
 {
 	this->Initialize1x1ColorTexture(device, color, type);

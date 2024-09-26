@@ -1,10 +1,7 @@
 #pragma once
-#include <DirectXMath.h>
-#include <wrl.h>
-
+#include "SimpleMath.h"
 #include "Engine/Components/Transform.h"
-
-//TODO: Use simple math library and quaternions for camera
+#include "Engine/Core/Object.h"
 
 using namespace DirectX;
 
@@ -14,21 +11,20 @@ enum ProjectionType {
 };
 DEFINE_ENUM_FLAG_OPERATORS(ProjectionType)
 
-class Camera
+class Camera : public Object
 {
 public:
     Camera();
+    void Destroy() override;
     void SetProjectionValues(float FOV, float aspectRatio, float nearZ, float farZ, ProjectionType type);
 
-    [[nodiscard]] const XMMATRIX& GetViewMatrix() const;
-    [[nodiscard]] const XMMATRIX& GetProjectionMatrix() const;
+    [[nodiscard]] const SimpleMath::Matrix& GetViewMatrix() const;
+    [[nodiscard]] const SimpleMath::Matrix& GetProjectionMatrix() const;
     void UpdateViewMatrix();
-    [[nodiscard]] const XMVECTOR& GetCamTarget() const { return this->camTarget; }
-
-    Transform transform;
+    [[nodiscard]] const SimpleMath::Vector3& GetCamTarget() const { return this->camTarget; }
 
 private:
-    XMVECTOR camTarget{};
-    XMMATRIX viewMatrix{};
-    XMMATRIX projectionMatrix{};
+    SimpleMath::Vector3 camTarget{};
+    SimpleMath::Matrix viewMatrix{};
+    SimpleMath::Matrix projectionMatrix{};
 };

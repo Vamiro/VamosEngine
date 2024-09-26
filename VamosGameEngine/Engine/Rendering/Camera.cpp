@@ -1,48 +1,52 @@
 #include "Camera.h"
 
-#include "SimpleMath.h"
-
-Camera::Camera()
+Camera::Camera() : Object("Camera")
 {
     this->UpdateViewMatrix();
 }
 
+void Camera::Destroy()
+{
+}
+
 void Camera::SetProjectionValues(float fovDegrees, float aspectRatio, float nearZ, float farZ, ProjectionType type)
 {
-    float fovRadians = (fovDegrees / 360.0f) * XM_2PI;
+    float fovRadians = DirectX::XMConvertToRadians(fovDegrees);
 
     if (type & PERSPECTIVE)
     {
-        this->projectionMatrix = XMMatrixPerspectiveFovLH(fovRadians, aspectRatio, nearZ, farZ);
-    } else if (type & ORTHOGRAPHIC)
+        this->projectionMatrix = SimpleMath::Matrix::CreatePerspectiveFieldOfView(fovRadians, aspectRatio, nearZ, farZ);
+    }
+    else if (type & ORTHOGRAPHIC)
     {
-        this->projectionMatrix = XMMatrixOrthographicLH(fovDegrees, fovDegrees/aspectRatio, nearZ, farZ);
+        this->projectionMatrix = SimpleMath::Matrix::CreateOrthographic(fovDegrees, fovDegrees / aspectRatio, nearZ, farZ);
     }
 }
 
-const XMMATRIX& Camera::GetViewMatrix() const
+const SimpleMath::Matrix& Camera::GetViewMatrix() const
 {
     return this->viewMatrix;
 }
 
-const XMMATRIX& Camera::GetProjectionMatrix() const
+const SimpleMath::Matrix& Camera::GetProjectionMatrix() const
 {
     return this->projectionMatrix;
 }
 
-void Camera::UpdateViewMatrix() //Updates view matrix and also updates the movement vectors
+void Camera::UpdateViewMatrix()
 {
-    this->transform.UpdateWorldMatrix();
-    //Calculate camera rotation matrix
-    XMMATRIX camRotationMatrix = XMMatrixRotationRollPitchYaw(this->transform.GetRotationFloat3().x, this->transform.GetRotationFloat3().y, this->transform.GetRotationFloat3().z);
-    //Calculate unit vector of cam target based off camera forward value transformed by cam rotation matrix
-    camTarget = XMVector3TransformCoord(this->transform.DEFAULT_FORWARD_VECTOR, camRotationMatrix);
-    //Adjust cam target to be offset by the camera's current position
-    camTarget += this->transform.GetPositionVector();
-    //Calculate up direction based on current rotation
-    XMVECTOR upDir = XMVector3TransformCoord(this->transform.DEFAULT_UP_VECTOR, camRotationMatrix);
-    //Rebuild view matrix
-    this->viewMatrix = XMMatrixLookAtLH(this->transform.GetPositionVector(), camTarget, upDir);
+    this->transform->UpdateWorldMatrix();
 
-    XMMATRIX vecRotationMatrix = XMMatrixRotationRollPitchYaw(this->transform.GetRotationFloat3().x, this->transform.GetRotationFloat3().y, 0.0f);
+    // Вычисляем матрицу вращения камеры на основе кватерниона
+    SimpleMath::Matrix camRotationMatrix = SimpleMath::Matrix::CreateFromQuaternion(this->transform->GetRotationQuaternion());
+
+    // Вычисляем целевой вектор камеры
+    camTarget = SimpleMath::Vector3::Transform(this->transform->DEFAULT_FORWARD_VECTOR, camRotationMatrix);
+    camTarget += this->transform->GetPositionVector();
+
+    // Обновляем направление "вверх" камеры
+    SimpleMath::Vector3 upDir = SimpleMath::Vector3::Transform(this->transform->DEFAULT_UP_VECTOR, camRotationMatrix);
+
+    // Перестраиваем матрицу вида
+    this->viewMatrix = SimpleMath::Matrix::CreateLookAt(this->transform->GetPositionVector(), camTarget, upDir);
 }

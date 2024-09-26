@@ -1,22 +1,24 @@
 #pragma once
-#include "IComponent.h"
+
+#include "ImGUI/imgui.h"
+#include "Component.h"
 #include "../Rendering/Mesh.h"
 
-using namespace DirectX;
-
-class Model : public IComponent
+class Model : public Component
 {
 public:
+    explicit Model(Object& parent) : Component(parent, "Model"), cb_vs_vertexshader(nullptr), cb_ps_pixelshader(nullptr) {}
+
     bool Initialize(const std::string& filePath, const Microsoft::WRL::ComPtr<ID3D11Device>& device, const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext,
                     ConstantBuffer<CB_VS_VertexShader>& cb_vs_vertexshader, ConstantBuffer<CB_PS_PixelShader>& cb_ps_pixelshader);
-    void Draw(const XMMATRIX& worldMatrix, const XMMATRIX& viewProjectionMatrix);
+    void Draw(const DirectX::SimpleMath::Matrix& worldMatrix, const DirectX::SimpleMath::Matrix& viewProjectionMatrix);
 
-    [[nodiscard]] SimpleMath::Color GetColor() const { return color; }
-    void SetColor(const SimpleMath::Color& value) { color = value; }
+    [[nodiscard]] DirectX::SimpleMath::Color GetColor() const { return color; }
+    void SetColor(const DirectX::SimpleMath::Color& value) { color = value; }
 
 
 private:
-    SimpleMath::Color color = {1.0f, 1.0f, 1.0f, 1.0f};
+    DirectX::SimpleMath::Color color = {1.0f, 1.0f, 1.0f, 1.0f};
     std::vector<Mesh> meshes;
 
     Microsoft::WRL::ComPtr<ID3D11Device> device;

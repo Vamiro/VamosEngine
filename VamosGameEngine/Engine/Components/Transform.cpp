@@ -1,267 +1,140 @@
 ﻿#include "Transform.h"
 
-#include "SimpleMath.h"
-#include "ImGUI/imgui.h"
-
-
-Transform::Transform()
+Transform::Transform(Object& parent) : Component(parent, "Transform")
 {
-    this->pos = XMFLOAT3(0.0f, 0.0f, 0.0f);
-    this->posVector = XMLoadFloat3(&this->pos);
+}
 
-    this->rot = XMFLOAT3(0.0f, 0.0f, 0.0f);
-    this->rotVector = XMLoadFloat3(&this->rot);
+void Transform::RenderGUI()
+{
+    float pos[3] = {position.x, position.y, position.z};
+    float scale[3] = {this->scale.x, this->scale.y, this->scale.z};
 
-    this->scale = XMFLOAT3(1.0f, 1.0f, 1.0f);
-    this->scaleVector = XMLoadFloat3(&this->scale);
+    ImGui::DragFloat3("Position", pos, 0.1f);
+    ImGui::DragFloat3("Scale", scale, 0.1f);
+
+    SetPosition(SimpleMath::Vector3(pos[0], pos[1], pos[2]));
+    SetScale(SimpleMath::Vector3(scale[0], scale[1], scale[2]));
 }
 
 void Transform::UpdateWorldMatrix()
 {
-    XMMATRIX scaleMatrix = XMMatrixScaling(this->scale.x, this->scale.y, this->scale.z);
-    XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(this->rot.x, this->rot.y, this->rot.z);
-    XMMATRIX translationMatrix = XMMatrixTranslation(this->pos.x, this->pos.y, this->pos.z);
+    SimpleMath::Matrix scaleMatrix = SimpleMath::Matrix::CreateScale(this->scale);
+    SimpleMath::Matrix rotationMatrix = SimpleMath::Matrix::CreateFromQuaternion(this->rotation);
+    SimpleMath::Matrix translationMatrix = SimpleMath::Matrix::CreateTranslation(this->position);
 
     // Объединяем матрицы: масштаб, потом вращение, потом перевод
     this->worldMatrix = scaleMatrix * rotationMatrix * translationMatrix;
 
     // Обновляем векторы направления
-    this->vec_forward = XMVector3TransformCoord(this->DEFAULT_FORWARD_VECTOR, rotationMatrix);
-    this->vec_backward = XMVector3TransformCoord(this->DEFAULT_BACKWARD_VECTOR, rotationMatrix);
-    this->vec_left = XMVector3TransformCoord(this->DEFAULT_LEFT_VECTOR, rotationMatrix);
-    this->vec_right = XMVector3TransformCoord(this->DEFAULT_RIGHT_VECTOR, rotationMatrix);
-    this->vec_up = XMVector3TransformCoord(this->DEFAULT_UP_VECTOR, rotationMatrix);
+    this->vec_forward = SimpleMath::Vector3::Transform(DEFAULT_FORWARD_VECTOR, rotationMatrix);
+    this->vec_backward = SimpleMath::Vector3::Transform(DEFAULT_BACKWARD_VECTOR, rotationMatrix);
+    this->vec_left = SimpleMath::Vector3::Transform(DEFAULT_LEFT_VECTOR, rotationMatrix);
+    this->vec_right = SimpleMath::Vector3::Transform(DEFAULT_RIGHT_VECTOR, rotationMatrix);
+    this->vec_up = SimpleMath::Vector3::Transform(DEFAULT_UP_VECTOR, rotationMatrix);
+    this->vec_down = SimpleMath::Vector3::Transform(DEFAULT_DOWN_VECTOR, rotationMatrix);
+
 }
 
-XMVECTOR Transform::DegreesToRadians(const float x, const float y, const float z)
+const SimpleMath::Vector3& Transform::GetPositionVector() const
 {
-    XMVECTOR degrees = XMVectorSet(x, y, z, 0.0f);
-    degrees = degrees * XM_PI / 180;
-    return degrees;
+    return this->position;
 }
 
-void Transform::RenderGUI()
-{
-    
-}
-
-const XMVECTOR& Transform::GetPositionVector() const
-{
-    return this->posVector;
-}
-
-const XMFLOAT3& Transform::GetPositionFloat3() const
-{
-    return this->pos;
-}
-
-const XMVECTOR& Transform::GetScaleVector() const
-{
-    return this->scaleVector;
-}
-
-const XMFLOAT3& Transform::GetScaleFloat3() const
+const SimpleMath::Vector3& Transform::GetScaleVector() const
 {
     return this->scale;
 }
 
-const XMVECTOR& Transform::GetRotationVector() const
+const SimpleMath::Quaternion& Transform::GetRotationQuaternion() const
 {
-    return this->rotVector;
+    return this->rotation;
 }
 
-const XMFLOAT3& Transform::GetRotationFloat3() const
+void Transform::SetPosition(const SimpleMath::Vector3& pos)
 {
-    return this->rot;
-}
-
-void Transform::SetPosition(const XMVECTOR& pos)
-{
-    XMStoreFloat3(&this->pos, pos);
-    this->posVector = pos;
+    this->position = pos;
     this->UpdateWorldMatrix();
 }
 
-void Transform::SetPosition(const XMFLOAT3& pos)
+void Transform::AdjustPosition(const SimpleMath::Vector3& pos)
 {
-    this->pos = pos;
-    this->posVector = XMLoadFloat3(&this->pos);
-    this->UpdateWorldMatrix();
+    SetPosition(this->position + pos);
 }
 
-void Transform::SetPosition(float x, float y, float z)
-{
-    this->pos = XMFLOAT3(x, y, z);
-    this->posVector = XMLoadFloat3(&this->pos);
-    this->UpdateWorldMatrix();
-}
-
-void Transform::AdjustPosition(const XMVECTOR& pos)
-{
-    this->posVector += pos;
-    XMStoreFloat3(&this->pos, this->posVector);
-    this->UpdateWorldMatrix();
-}
-
-void Transform::AdjustPosition(const XMFLOAT3& pos)
-{
-    this->pos.x += pos.y;
-    this->pos.y += pos.y;
-    this->pos.z += pos.z;
-    this->posVector = XMLoadFloat3(&this->pos);
-    this->UpdateWorldMatrix();
-}
-
-void Transform::AdjustPosition(float x, float y, float z)
-{
-    this->pos.x += x;
-    this->pos.y += y;
-    this->pos.z += z;
-    this->posVector = XMLoadFloat3(&this->pos);
-    this->UpdateWorldMatrix();
-}
-
-void Transform::SetScale(const XMVECTOR& scale)
-{
-    XMStoreFloat3(&this->scale, scale);
-    this->scaleVector = scale;
-    this->UpdateWorldMatrix();
-}
-
-void Transform::SetScale(const XMFLOAT3& scale)
+void Transform::SetScale(const SimpleMath::Vector3& scale)
 {
     this->scale = scale;
-    this->scaleVector = XMLoadFloat3(&this->scale);
     this->UpdateWorldMatrix();
 }
 
-void Transform::SetScale(float x, float y, float z)
+void Transform::AdjustScale(const SimpleMath::Vector3& scale)
 {
-    this->scale = XMFLOAT3(x, y, z);
-    this->scaleVector = XMLoadFloat3(&this->scale);
-    this->UpdateWorldMatrix();
+    SetScale(this->scale + scale);
 }
 
-void Transform::AdjustScale(const XMVECTOR& scale)
+void Transform::SetRotation(SimpleMath::Quaternion quaternion)
 {
-    this->scaleVector += scale;
-    XMStoreFloat3(&this->scale, this->scaleVector);
-    this->UpdateWorldMatrix();
+    eulerAngles = quaternion.ToEuler();
+    rotation = quaternion;
+    UpdateWorldMatrix();
 }
 
-void Transform::AdjustScale(const XMFLOAT3& scale)
+void Transform::SetEulerRotate(const SimpleMath::Vector3& eulerAngle)
 {
-    this->scale.x += scale.x;
-    this->scale.y += scale.y;
-    this->scale.z += scale.z;
-    this->scaleVector = XMLoadFloat3(&this->scale);
-    this->UpdateWorldMatrix();
+    eulerAngles = eulerAngle;
+    rotation = SimpleMath::Quaternion::CreateFromYawPitchRoll(Radians(eulerAngle.x), Radians(eulerAngle.y), Radians(eulerAngle.z));
+    UpdateWorldMatrix();
 }
 
-void Transform::AdjustScale(float x, float y, float z)
+void Transform::SetRadianRotate(const SimpleMath::Vector3& radians)
 {
-    this->scale.x += x;
-    this->scale.y += y;
-    this->scale.z += z;
-    this->scaleVector = XMLoadFloat3(&this->scale);
-    this->UpdateWorldMatrix();
+    eulerAngles = SimpleMath::Vector3(Degrees(radians.x), Degrees(radians.y), Degrees(radians.z));
+    rotation = SimpleMath::Quaternion::CreateFromYawPitchRoll(radians.x,radians.y,radians.z);
+    UpdateWorldMatrix();
 }
 
-void Transform::SetRotation(const XMVECTOR& rot)
+void Transform::AdjustRotation(const SimpleMath::Vector3& eulerAngle)
 {
-    this->rotVector = rot;
-    XMStoreFloat3(&this->rot, rot);
-    this->UpdateWorldMatrix();
+    SetEulerRotate(eulerAngles + eulerAngle);
 }
 
-void Transform::SetRotation(const XMFLOAT3& rot)
+void Transform::AdjustRotation(float roll, float pitch, float yaw)
 {
-    this->rot = rot;
-    this->rotVector = XMLoadFloat3(&this->rot);
-    this->UpdateWorldMatrix();
+    SetEulerRotate(eulerAngles + SimpleMath::Vector3(roll,pitch,yaw));
 }
 
-void Transform::SetRotation(float x, float y, float z)
+void Transform::SetLookAtPos(const SimpleMath::Vector3& lookAtPos)
 {
-    this->rot = XMFLOAT3(x, y, z);
-    this->rotVector = XMLoadFloat3(&this->rot);
-    this->UpdateWorldMatrix();
+    if (lookAtPos == this->position) return;
+
+    SimpleMath::Vector3 direction = this->position - lookAtPos;
+    direction.Normalize();
+
+    SimpleMath::Quaternion lookAtQuat = SimpleMath::Quaternion::CreateFromRotationMatrix(SimpleMath::Matrix::CreateLookAt(this->position, lookAtPos, DEFAULT_UP_VECTOR));
+    this->SetRotation(lookAtQuat);
 }
 
-void Transform::AdjustRotation(const XMVECTOR& rot)
-{
-    this->rotVector += rot;
-    XMStoreFloat3(&this->rot, this->rotVector);
-    this->UpdateWorldMatrix();
-}
-
-void Transform::AdjustRotation(const XMFLOAT3& rot)
-{
-    this->rot.x += rot.x;
-    this->rot.y += rot.y;
-    this->rot.z += rot.z;
-    this->rotVector = XMLoadFloat3(&this->rot);
-    this->UpdateWorldMatrix();
-}
-
-void Transform::AdjustRotation(float x, float y, float z)
-{
-    this->rot.x += x;
-    this->rot.y += y;
-    this->rot.z += z;
-    this->rotVector = XMLoadFloat3(&this->rot);
-    this->UpdateWorldMatrix();
-}
-
-void Transform::SetLookAtPos(XMFLOAT3 lookAtPos)
-{
-    //Verify that look at pos is not the same as cam pos. They cannot be the same as that wouldn't make sense and would result in undefined behavior.
-    if (lookAtPos.x == this->pos.x && lookAtPos.y == this->pos.y && lookAtPos.z == this->pos.z)
-        return;
-
-    lookAtPos.x = this->pos.x - lookAtPos.x;
-    lookAtPos.y = this->pos.y - lookAtPos.y;
-    lookAtPos.z = this->pos.z - lookAtPos.z;
-
-    float pitch = 0.0f;
-    if (lookAtPos.y != 0.0f)
-    {
-        const float distance = sqrt(lookAtPos.x * lookAtPos.x + lookAtPos.z * lookAtPos.z);
-        pitch = atan(lookAtPos.y / distance);
-    }
-
-    float yaw = 0.0f;
-    if (lookAtPos.x != 0.0f)
-    {
-        yaw = atan(lookAtPos.x / lookAtPos.z);
-    }
-    if (lookAtPos.z > 0)
-        yaw += XM_PI;
-
-    this->SetRotation(pitch, yaw, 0.0f);
-}
-
-const XMVECTOR& Transform::GetForwardVector()
+const SimpleMath::Vector3& Transform::GetForwardVector()
 {
     return this->vec_forward;
 }
 
-const XMVECTOR& Transform::GetRightVector()
+const SimpleMath::Vector3& Transform::GetRightVector()
 {
     return this->vec_right;
 }
 
-const XMVECTOR& Transform::GetBackwardVector()
+const SimpleMath::Vector3& Transform::GetBackwardVector()
 {
     return this->vec_backward;
 }
 
-const XMVECTOR& Transform::GetLeftVector()
+const SimpleMath::Vector3& Transform::GetLeftVector()
 {
     return this->vec_left;
 }
 
-const XMVECTOR& Transform::GetUpVector()
+const SimpleMath::Vector3& Transform::GetUpVector()
 {
     return this->vec_up;
 }

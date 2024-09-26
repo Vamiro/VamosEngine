@@ -2,10 +2,11 @@
 #include <d3d11.h>
 #include <wrl/client.h>
 #include <assimp/material.h>
+
+#include "DDSTextureLoader.h"
+#include "WICTextureLoader.h"
+#include "SimpleMath.h"
 #include "Engine/Utilities/ErrorLogger.h"
-#include <DirectXTK/SimpleMath.h>
-#include <DirectXTK/WICTextureLoader.h>
-#include <DirectXTK/DDSTextureLoader.h>
 
 enum class TextureStorageType
 {

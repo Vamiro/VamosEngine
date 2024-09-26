@@ -36,8 +36,8 @@ add_executable(VamosGameEngine WIN32
         VamosGameEngine/Engine/Graphics/VertexBuffer.h
         VamosGameEngine/Engine/Rendering/Camera.cpp
         VamosGameEngine/Engine/Rendering/Camera.h
-        VamosGameEngine/Engine/Rendering/GameObject.cpp
-        VamosGameEngine/Engine/Rendering/GameObject.h
+        VamosGameEngine/Engine/Core/Object.cpp
+        VamosGameEngine/Engine/Core/Object.h
         VamosGameEngine/Engine/Rendering/Mesh.cpp
         VamosGameEngine/Engine/Rendering/Mesh.h
         VamosGameEngine/Engine/Components/Model.cpp
@@ -82,15 +82,23 @@ add_executable(VamosGameEngine WIN32
         VamosGameEngine/Engine/Apps/PongApp/PongApp.h
         VamosGameEngine/Engine/Apps/PongApp/GameObjects/BoxObject.cpp
         VamosGameEngine/Engine/Apps/PongApp/GameObjects/BoxObject.h
-        VamosGameEngine/Engine/Components/IComponent.h
+        VamosGameEngine/Engine/Components/Component.h
+        VamosGameEngine/Engine/Components/SphereCollider.h
+        VamosGameEngine/Engine/Physics/PhysicsLayers.h
+        VamosGameEngine/Engine/Components/SphereCollider.cpp
+        VamosGameEngine/Engine/Core/GameObject.cpp
+        VamosGameEngine/Engine/Core/GameObject.h
+        VamosGameEngine/Engine/Components/BoxCollider.cpp
+        VamosGameEngine/Engine/Components/BoxCollider.h
 )
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
+add_subdirectory(VamosGameEngine/ThirdParty/JoltPhysics/Build)
 add_subdirectory(VamosGameEngine/ThirdParty/DirectXTK ${CMAKE_BINARY_DIR}/bin/CMake/DirectXTK)
 add_subdirectory(VamosGameEngine/ThirdParty/assimp)
 
-target_link_libraries(VamosGameEngine d3d11.lib dxgi.lib d3dcompiler.lib DirectXTK assimp)
+target_link_libraries(VamosGameEngine d3d11.lib dxgi.lib d3dcompiler.lib DirectXTK assimp Jolt)
 
 add_custom_command(TARGET VamosGameEngine POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory

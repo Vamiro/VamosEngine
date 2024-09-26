@@ -1,14 +1,13 @@
 #pragma once
 #include "Adapters.h"
 #include "shaders.h"
-#include <DirectXTK/SpriteBatch.h>
-#include <DirectXTK/SpriteFont.h>
-#include <DirectXTK/WICTextureLoader.h>
 
 #include "ShaderManager.h"
+#include "SpriteBatch.h"
+#include "SpriteFont.h"
 #include "Engine/Rendering/Camera.h"
 #include "Engine/Utilities/Timer.h"
-#include "Engine/Rendering/GameObject.h"
+#include "Engine/Core/GameObject.h"
 
 class Engine;
 
@@ -26,6 +25,9 @@ public:
     ShaderManager* shaderManager;
     Microsoft::WRL::ComPtr<ID3D11Device> GetDevice() { return device; }
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> GetDeviceContext() { return deviceContext; }
+    Microsoft::WRL::ComPtr<IDXGISwapChain> GetSwapChain() { return swapChain; }
+    Microsoft::WRL::ComPtr<ID3D11RenderTargetView> GetRenderTargetView() { return renderTargetView; }
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilView> GetDepthStencilView() { return depthStencilView; }
     int GetWindowHeight() const { return windowHeight; }
     int GetWindowWidth() const { return windowWidth; }
 
