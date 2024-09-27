@@ -8,6 +8,8 @@ public:
     {
     }
 
+    virtual void Start();
     virtual void Update(float deltaTime);
-    virtual void Render(const SimpleMath::Matrix& viewProjectionMatrix);
+    void Render(const SimpleMath::Matrix& viewProjectionMatrix);
+    void Destroy() override;
 };

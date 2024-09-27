@@ -32,7 +32,9 @@ public:
         return nullptr;
     }
 
-    void RenderComponents() const;
+    void AddComponent(Component* component){ components.push_back(component); }
+
+    void RenderComponentsGUI() const;
 
 protected:
     std::vector<Component*> components;

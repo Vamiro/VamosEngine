@@ -2,7 +2,15 @@
 
 #include "Engine/Core/Object.h"
 
-SphereCollider::SphereCollider(Object& parent, float radius) : Component(parent, "SphereCollider"), radius(radius), sphereShape(nullptr), physicsSystem(nullptr) {}
+SphereCollider::SphereCollider(Object& parent, const float radius,
+    JPH::PhysicsSystem& physicsSystem, const DirectX::SimpleMath::Vector3& initPosition) :
+        Component(parent, "SphereCollider"),
+        mPosition(initPosition),
+        sphereShape(nullptr),
+        radius(radius),
+        physicsSystem(&physicsSystem)
+{
+}
 
 SphereCollider::~SphereCollider()
 {
@@ -14,11 +22,8 @@ SphereCollider::~SphereCollider()
     delete sphereShape;
 }
 
-void SphereCollider::Initialize(JPH::PhysicsSystem& physicsSystem, const SimpleMath::Vector3& initPosition)
+void SphereCollider::Start()
 {
-    this->physicsSystem = &physicsSystem;
-
-    mPosition = initPosition;
     auto pos = parent->transform->GetPositionVector();
 
     // Создаем сферическую форму
@@ -28,7 +33,12 @@ void SphereCollider::Initialize(JPH::PhysicsSystem& physicsSystem, const SimpleM
     JPH::BodyCreationSettings bodySettings(sphereShape, {mPosition.x + pos.x, mPosition.y + pos.y, mPosition.z + pos.z}, JPH::Quat::sIdentity(), JPH::EMotionType::Static, PhysicsLayers::MOVING);
 
     // Создаем физическое тело и добавляем его в систему
-    bodyID = physicsSystem.GetBodyInterface().CreateAndAddBody(bodySettings, JPH::EActivation::Activate);
+    bodyID = physicsSystem->GetBodyInterface().CreateAndAddBody(bodySettings, JPH::EActivation::Activate);
+}
+
+void SphereCollider::Update()
+{
+    UpdatePosition();
 }
 
 void SphereCollider::UpdatePosition() const
@@ -55,7 +65,6 @@ void SphereCollider::SetPosition(const SimpleMath::Vector3& position)
 
 void SphereCollider::HandleCollision(const JPH::BodyID& otherBodyID)
 {
-
 }
 
 void SphereCollider::Scale(const SimpleMath::Vector3& scale)

@@ -10,7 +10,10 @@ class Transform : public Component
 {
 public:
     Transform(Object& parent);
+    ~Transform() override;
 
+    void Start() override;
+    void Update() override;
     void RenderGUI() override;
 
     const SimpleMath::Vector3& GetPositionVector() const;
@@ -36,6 +39,7 @@ public:
     const SimpleMath::Vector3& GetBackwardVector();
     const SimpleMath::Vector3& GetLeftVector();
     const SimpleMath::Vector3& GetUpVector();
+    const SimpleMath::Vector3& GetDownVector();
 
     void UpdateWorldMatrix();
     [[nodiscard]] SimpleMath::Matrix GetWorldMatrix() const { return worldMatrix; }

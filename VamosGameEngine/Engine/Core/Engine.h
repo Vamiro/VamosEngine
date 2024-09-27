@@ -6,9 +6,10 @@
 class Engine
 {
 public:
+	virtual ~Engine() = default;
 	Engine();
 	LRESULT WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM LParam);
-	virtual bool Initialize(HINSTANCE hInstance, std::string window_title, std::string window_class, int width, int height) = 0;
+	virtual bool Start(HINSTANCE hInstance, std::string window_title, std::string window_class, int width, int height) = 0;
 	virtual bool ProcessMessages() = 0;
 	virtual void Update() = 0;
 	virtual void RenderFrame() = 0;

@@ -17,15 +17,18 @@
 class SphereCollider : public Component
 {
 public:
-    explicit SphereCollider(Object& parent, float radius);
-    ~SphereCollider();
+    explicit SphereCollider(Object& parent, float radius, JPH::PhysicsSystem& physicsSystem, const DirectX::SimpleMath::Vector3& initPosition);
+    ~SphereCollider() override;
 
+    void Start() override;
+    void Update() override;
     void RenderGUI() override;
-    void Initialize(JPH::PhysicsSystem& physicsSystem, const DirectX::SimpleMath::Vector3& initPosition);
     void UpdatePosition() const;
-    void SetPosition(const DirectX::SimpleMath::Vector3& position);
     void HandleCollision(const JPH::BodyID& otherBodyID);
+
+    void SetPosition(const DirectX::SimpleMath::Vector3& position);
     void Scale(const DirectX::SimpleMath::Vector3& scale);
+    [[nodiscard]] JPH::BodyID GetBodyID() const { return bodyID; }
 
 private:
     DirectX::SimpleMath::Vector3 mPosition;

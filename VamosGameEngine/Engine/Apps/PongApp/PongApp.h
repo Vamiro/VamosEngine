@@ -8,7 +8,7 @@
 
 class PongApp : public GameEngine{
 public:
-    bool Initialize(HINSTANCE hInstance, std::string window_title, std::string window_class, int width,
+    bool Start(HINSTANCE hInstance, std::string window_title, std::string window_class, int width,
                     int height) override;
     void Update() override;
     void ResetBall();
@@ -19,13 +19,11 @@ private:
     float maxSpeed = 0.02f;
     SimpleMath::Vector3 speed = SimpleMath::Vector3(0.015f, 0.0f, 0.015f);
     SimpleMath::Vector3 currentSpeed = speed;
-    SphereObject* ball;
-
-    // BoxObject* playerLeft;
-    BoxObject* playerRight;
 
     int scoreLeft = 0;
     int scoreRight = 0;
+
+    GameObject* ball;
 
     // BoxObject* wallTop;
     // BoxObject* wallBottom;

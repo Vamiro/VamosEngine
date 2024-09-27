@@ -7,6 +7,7 @@ Camera::Camera() : Object("Camera")
 
 void Camera::Destroy()
 {
+    delete transform;
 }
 
 void Camera::SetProjectionValues(float fovDegrees, float aspectRatio, float nearZ, float farZ, ProjectionType type)

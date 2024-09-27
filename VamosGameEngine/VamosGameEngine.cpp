@@ -8,7 +8,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 {
     PongApp game;
 
-    if (game.Initialize(hInstance, "Vamos Game Engine", "VamosGameEngine", 800, 600))
+    if (game.Start(hInstance, "Vamos Game Engine", "VamosGameEngine", 800, 600))
     {
         while (!game.IsClosed())
         {

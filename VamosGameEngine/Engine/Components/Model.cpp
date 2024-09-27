@@ -1,26 +1,27 @@
 #include "Model.h"
 #include <utility>
 
-bool Model::Initialize(const std::string& filePath, const Microsoft::WRL::ComPtr<ID3D11Device>& device, const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext,
-                       ConstantBuffer<CB_VS_VertexShader>& cb_vs_vertexshader, ConstantBuffer<CB_PS_PixelShader>& cb_ps_pixelshader)
+Model::Model(Object& parent, const Microsoft::WRL::ComPtr<ID3D11Device>& device,
+    const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext,
+    ConstantBuffer<CB_VS_VertexShader>& cb_vs_vertexshader, ConstantBuffer<CB_PS_PixelShader>& cb_ps_pixelshader) :
+        Component(parent, "Model"),
+        device(device.Get()),
+        deviceContext(deviceContext.Get()),
+        cb_vs_vertexshader(&cb_vs_vertexshader),
+        cb_ps_pixelshader(&cb_ps_pixelshader)
 {
-    this->device = device.Get();
-    this->deviceContext = deviceContext.Get();
-    this->cb_vs_vertexshader = &cb_vs_vertexshader;
-    this->cb_ps_pixelshader = &cb_ps_pixelshader;
+}
 
-    try
-    {
-        if (!this->LoadModel(filePath))
-        {
-        }
-    }
-    catch (COMException& exception)
-    {
-        ErrorLogger::Log(exception);
-        return false;
-    }
-    return true;
+Model::~Model()
+{
+}
+
+void Model::Start()
+{
+}
+
+void Model::Update()
+{
 }
 
 void Model::Draw(const DirectX::SimpleMath::Matrix& worldMatrix, const DirectX::SimpleMath::Matrix& viewProjectionMatrix)
@@ -31,11 +32,11 @@ void Model::Draw(const DirectX::SimpleMath::Matrix& worldMatrix, const DirectX::
     this->cb_vs_vertexshader->ApplyChanges(0);
     this->deviceContext->VSSetConstantBuffers(0, 1, this->cb_vs_vertexshader->GetAddressOf());
 
-    // Обновите буфер пиксельного шейдера с цветом объекта
+    // Update the pixel shader buffer with the color of the object
     CB_PS_PixelShader psBufferData;
-    psBufferData.objectColor = color; // Преобразование в float4
-    cb_ps_pixelshader->data = psBufferData; // Предполагая, что у вас есть cb_ps_pixelshader
-    cb_ps_pixelshader->ApplyChanges(0); // Применение изменений
+    psBufferData.objectColor = color; // conversion to float4
+    cb_ps_pixelshader->data = psBufferData;
+    cb_ps_pixelshader->ApplyChanges(0); // Applying
 
     // Установка буфера перед отрисовкой
     this->deviceContext->PSSetConstantBuffers(1, 1, cb_ps_pixelshader->GetAddressOf());
@@ -46,11 +47,26 @@ void Model::Draw(const DirectX::SimpleMath::Matrix& worldMatrix, const DirectX::
     }
 }
 
-bool Model::LoadModel(const std::string filePath)
+void Model::SetModelDirectory(const std::string& filePath)
 {
-    this->directory = StringHelper::GetDirectoryFromPath(filePath);
+    if (!filePath.empty())
+    {
+        directory = filePath;
+        try
+        {
+            this->LoadModel();
+        }
+        catch (COMException& exception)
+        {
+            ErrorLogger::Log(exception);
+        }
+    }
+}
+
+bool Model::LoadModel()
+{
     Assimp::Importer importer;
-    const aiScene* pScene = importer.ReadFile(filePath, aiProcess_Triangulate | aiProcess_ConvertToLeftHanded);
+    const aiScene* pScene = importer.ReadFile(directory, aiProcess_Triangulate | aiProcess_ConvertToLeftHanded);
     if (pScene == nullptr)
     {
         return false;
@@ -61,6 +77,7 @@ bool Model::LoadModel(const std::string filePath)
 
 void Model::ProcessNode(aiNode* node, const aiScene* scene)
 {
+    meshes.clear();
     for (UINT i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];

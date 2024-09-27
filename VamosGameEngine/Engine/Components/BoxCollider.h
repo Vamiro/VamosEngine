@@ -11,26 +11,33 @@
 #include <iostream>
 
 #include "Component.h"
+#include "Delegate.h"
 #include "SimpleMath.h"
 #include "Engine/Physics/PhysicsLayers.h"
 
 class BoxCollider : public Component
 {
 public:
-    explicit BoxCollider(Object& parent, DirectX::SimpleMath::Vector3 extensions);
-    ~BoxCollider();
+    explicit BoxCollider(Object& parent, DirectX::SimpleMath::Vector3 extensions, JPH::PhysicsSystem& physicsSystem, const DirectX::SimpleMath::Vector3& initPosition);
+    ~BoxCollider() override;
 
+    void Start() override;
+    void Update() override;
     void RenderGUI() override;
-    void Initialize(JPH::PhysicsSystem& physicsSystem, const DirectX::SimpleMath::Vector3& initPosition);
     void UpdatePosition() const;
-    void SetPosition(const DirectX::SimpleMath::Vector3& position);
     void HandleCollision(const JPH::BodyID& otherBodyID);
-    void Scale(const DirectX::SimpleMath::Vector3& scale) const;
+
+    void SetPosition(const DirectX::SimpleMath::Vector3& position);
+    void Scale(const DirectX::SimpleMath::Vector3& scale);
+    [[nodiscard]] JPH::BodyID GetBodyID() const { return bodyID; }
 
 private:
     DirectX::SimpleMath::Vector3 mPosition;
-    JPH::BodyID bodyID;                 // ID физического тела для этого коллайдера
-    JPH::BoxShape* boxShape;            // Кубическая форма коллайдера
-    DirectX::SimpleMath::Vector3 extensions;                       // Радиус сферы
-    JPH::PhysicsSystem* physicsSystem;  // Указатель на физическую систему для взаимодействия
+    JPH::BodyID bodyID;                                             // ID физического тела для этого коллайдера
+    JPH::BoxShape* boxShape;                                        // Кубическая форма коллайдера
+    DirectX::SimpleMath::Vector3 extensions;                        // Радиус сферы
+    JPH::PhysicsSystem* physicsSystem;                              // Указатель на физическую систему для взаимодействия
+    DirectX::SimpleMath::Vector3 scale;
+
+    MulticastDelegate<> onCollision_;
 };

@@ -6,7 +6,7 @@ Object::Object(const std::string& name) : name(name)
     components.push_back(transform);
 }
 
-void Object::RenderComponents() const
+void Object::RenderComponentsGUI() const
 {
     for (const auto component : components)
     {

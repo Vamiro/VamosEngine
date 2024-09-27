@@ -4,6 +4,18 @@ Transform::Transform(Object& parent) : Component(parent, "Transform")
 {
 }
 
+Transform::~Transform()
+{
+}
+
+void Transform::Start()
+{
+}
+
+void Transform::Update()
+{
+}
+
 void Transform::RenderGUI()
 {
     float pos[3] = {position.x, position.y, position.z};
@@ -137,4 +149,9 @@ const SimpleMath::Vector3& Transform::GetLeftVector()
 const SimpleMath::Vector3& Transform::GetUpVector()
 {
     return this->vec_up;
+}
+
+const SimpleMath::Vector3& Transform::GetDownVector()
+{
+    return this->vec_down;
 }

@@ -3,7 +3,15 @@
 #include "SimpleMath.h"
 #include "Engine/Core/Object.h"
 
-BoxCollider::BoxCollider(Object& parent, const SimpleMath::Vector3 extensions) : Component(parent, "BoxCollider"), boxShape(nullptr), extensions(extensions), physicsSystem(nullptr) {}
+BoxCollider::BoxCollider(Object& parent, const SimpleMath::Vector3 extensions,
+    JPH::PhysicsSystem& physicsSystem, const SimpleMath::Vector3& initPosition) :
+        Component(parent, "BoxCollider"),
+        mPosition(initPosition),
+        boxShape(nullptr),
+        extensions(extensions),
+        physicsSystem(&physicsSystem)
+{
+}
 
 BoxCollider::~BoxCollider()
 {
@@ -15,11 +23,8 @@ BoxCollider::~BoxCollider()
     delete boxShape;
 }
 
-void BoxCollider::Initialize(JPH::PhysicsSystem& physicsSystem, const DirectX::SimpleMath::Vector3& initPosition)
+void BoxCollider::Start()
 {
-    this->physicsSystem = &physicsSystem;
-
-    mPosition = initPosition;
     auto pos = parent->transform->GetPositionVector();
 
     // Создаем сферическую форму
@@ -29,7 +34,12 @@ void BoxCollider::Initialize(JPH::PhysicsSystem& physicsSystem, const DirectX::S
     JPH::BodyCreationSettings bodySettings(boxShape, {mPosition.x + pos.x, mPosition.y + pos.y, mPosition.z + pos.z}, JPH::Quat::sIdentity(), JPH::EMotionType::Static, PhysicsLayers::MOVING);
 
     // Создаем физическое тело и добавляем его в систему
-    bodyID = physicsSystem.GetBodyInterface().CreateAndAddBody(bodySettings, JPH::EActivation::Activate);
+    bodyID = physicsSystem->GetBodyInterface().CreateAndAddBody(bodySettings, JPH::EActivation::Activate);
+}
+
+void BoxCollider::Update()
+{
+    UpdatePosition();
 }
 
 void BoxCollider::UpdatePosition() const
@@ -54,15 +64,25 @@ void BoxCollider::SetPosition(const SimpleMath::Vector3& position)
     }
 }
 
+
 void BoxCollider::HandleCollision(const JPH::BodyID& otherBodyID)
 {
 }
 
-void BoxCollider::Scale(const SimpleMath::Vector3& scale) const
+void BoxCollider::Scale(const SimpleMath::Vector3& scale)
 {
-    boxShape->ScaleShape({scale.x, scale.y, scale.z});
+    this->scale = scale;
+    boxShape->ScaleShape({this->scale.x, this->scale.y, this->scale.z});
 }
 
 void BoxCollider::RenderGUI()
 {
+    float pos[3] = {mPosition.x, mPosition.y, mPosition.z};
+    float scale[3] = {this->scale.x, this->scale.y, this->scale.z};
+
+    ImGui::DragFloat3("Position", pos, 0.1f);
+    ImGui::DragFloat3("Scale", scale, 0.1f);
+
+    SetPosition(SimpleMath::Vector3(pos[0], pos[1], pos[2]));
+    Scale(SimpleMath::Vector3(scale[0], scale[1], scale[2]));
 }

@@ -2,10 +2,12 @@
 
 #include <Windows.Media.Devices.Core.h>
 
+#include "Engine/Components/Model.h"
 
-bool PongApp::Initialize(HINSTANCE hInstance, std::string window_title, std::string window_class, int width, int height)
+
+bool PongApp::Start(HINSTANCE hInstance, std::string window_title, std::string window_class, int width, int height)
 {
-    GameEngine::Initialize(hInstance, window_title, window_class, width, height);
+    GameEngine::Start(hInstance, window_title, window_class, width, height);
 
     input_device_.OnKeyDown() += [&](const InputKey& args)
     {
@@ -72,8 +74,14 @@ void PongApp::Update()
     }
     if (input_device_.IsKeyDown(InputKey::E))
     {
-        gfx_.camera.transform->AdjustPosition(gfx_.camera.transform->GetUpVector() * cameraSpeed * deltaTime);
+        gfx_.camera.transform->AdjustPosition(gfx_.camera.transform->GetDownVector() * cameraSpeed * deltaTime);
     }
+    if (input_device_.IsKeyDown(InputKey::D1))
+    { ball->GetComponent<Model>()->SetModelDirectory("Data\\Objects\\box.obj"); }
+    if (input_device_.IsKeyDown(InputKey::D2))
+    { ball->GetComponent<Model>()->SetModelDirectory("Data\\Objects\\sphere.obj"); }
+
+
 
     // if (input_device_.IsKeyDown(InputKey::W) &&
     //     playerRight->transform.GetPositionFloat3().z + playerRight->transform.GetScaleFloat3().z < wallTop->transform.GetPositionFloat3().z)
@@ -184,7 +192,7 @@ void PongApp::RenderGui()
         &gameObjects,
         gameObjects.size());
 
-    gameObjects[currentGameObj]->RenderComponents();
+    gameObjects[currentGameObj]->RenderComponentsGUI();
 
     ImGui::End();
 
@@ -212,25 +220,31 @@ bool PongApp::InitializeScene()
         hr = cb_ps_pixelshader.Initialize(d3d_device.Get(), d3d_device_context.Get());
         ErrorLogger::Log(hr, "Failed to create pixelshader constant buffer.");
 
-        ball = new SphereObject("Ball");
-        ball->GetComponent<Model>()->Initialize("Data\\Objects\\sphere.obj", d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader);
-        ball->GetComponent<Model>()->SetColor(SimpleMath::Color(0.5f, 1.0f, 0.5f, 1.0f));
-        ball->transform->SetPosition(SimpleMath::Vector3(0.0f, -5.0f, 0.0f));
-        ball->transform->SetScale(SimpleMath::Vector3(0.8f, 0.8f, 0.8f));
-        ball->GetComponent<SphereCollider>()->Initialize(physicsSystem, {0.0f, 0.0f, 0.0f});
-        ball->GetComponent<SphereCollider>()->Scale(SimpleMath::Vector3(0.8f, 0.8f, 0.8f));
-        ball->GetComponent<SphereCollider>()->UpdatePosition();
-        gameObjects.emplace_back(ball);
+        // ball = new SphereObject("Ball");
+        // ball->GetComponent<Model>()->Initialize("Data\\Objects\\sphere.obj", d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader);
+        // ball->GetComponent<Model>()->SetColor(SimpleMath::Color(0.5f, 1.0f, 0.5f, 1.0f));
+        // ball->transform->SetPosition(SimpleMath::Vector3(0.0f, -5.0f, 0.0f));
+        // ball->transform->SetScale(SimpleMath::Vector3(0.8f, 0.8f, 0.8f));
+        // ball->GetComponent<SphereCollider>()->Initialize(physicsSystem, {0.0f, 0.0f, 0.0f});
+        // ball->GetComponent<SphereCollider>()->Scale(SimpleMath::Vector3(0.8f, 0.8f, 0.8f));
+        // ball->GetComponent<SphereCollider>()->UpdatePosition();
+        // gameObjects.emplace_back(ball);
+        //
+        // playerRight = new BoxObject("playerRight");
+        // playerRight->GetComponent<Model>()->Initialize("Data\\Objects\\box.obj", d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader);
+        // playerRight->GetComponent<Model>()->SetColor(SimpleMath::Color(0.0f, 0.0f, 1.0f, 1.0f));
+        // playerRight->transform->SetPosition(SimpleMath::Vector3(-12.0f, 0.0f, 0.0f));
+        // playerRight->transform->SetScale(SimpleMath::Vector3(0.2f, 2.0f, 2.0f));
+        // playerRight->GetComponent<BoxCollider>()->Initialize(physicsSystem, {0.0f, 0.0f, 0.0f});
+        // playerRight->GetComponent<BoxCollider>()->Scale(SimpleMath::Vector3(0.2f, 2.0f, 2.0f));
+        // playerRight->GetComponent<BoxCollider>()->UpdatePosition();
+        // gameObjects.emplace_back(playerRight);
 
-        playerRight = new BoxObject("playerRight");
-        playerRight->GetComponent<Model>()->Initialize("Data\\Objects\\box.obj", d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader);
-        playerRight->GetComponent<Model>()->SetColor(SimpleMath::Color(0.5f, 1.0f, 0.5f, 1.0f));
-        playerRight->transform->SetPosition(SimpleMath::Vector3(0.0f, -5.0f, 0.0f));
-        playerRight->transform->SetScale(SimpleMath::Vector3(0.8f, 0.8f, 0.8f));
-        playerRight->GetComponent<SphereCollider>()->Initialize(physicsSystem, {0.0f, 0.0f, 0.0f});
-        playerRight->GetComponent<SphereCollider>()->Scale(SimpleMath::Vector3(0.8f, 0.8f, 0.8f));
-        playerRight->GetComponent<SphereCollider>()->UpdatePosition();
-        gameObjects.emplace_back(playerRight);
+        ball = gameObjects.emplace_back(new GameObject("Empty object"));
+        ball->AddComponent(new Model(*ball, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
+        ball->GetComponent<Model>()->SetModelDirectory("Data\\Objects\\box.obj");
+
+
 
         // playerRight = new BoxObject("PlayerLeft");
         // playerRight->Initialize("Data\\Objects\\box.obj", d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader);

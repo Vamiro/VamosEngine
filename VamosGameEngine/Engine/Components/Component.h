@@ -5,13 +5,18 @@ class Object;
 
 class Component
 {
-    public:
-        Component(Object& parent, const char* name): name_(name) { this->parent = &parent; } ;
-        virtual void RenderGUI() = 0;
-        Object& GetParent() const { return *parent; }
-        const char* GetName() const { return name_; }
+public:
+    Component(Object& parent, const char* name): name_(name), parent(&parent) {}
+    virtual ~Component() = default;
 
-    protected:
-        Object* parent = nullptr;
-        const char* name_;
+    virtual void Start() = 0;
+    virtual void Update() = 0;
+    virtual void RenderGUI() = 0;
+
+    const char* GetName() const { return name_; }
+    Object& GetParent() const { return *parent; }
+
+protected:
+    const char* name_;
+    Object* parent = nullptr;
 };

@@ -1,8 +1,18 @@
 #include "GameEngine.h"
 #include <iostream>
 
+GameEngine::~GameEngine()
+{
+    for (const auto gameObject : gameObjects)
+    {
+        gameObject->Destroy();
+        delete gameObject;
+    }
+    delete tempAllocator;
+    delete jobSystem;
+}
 
-bool GameEngine::Initialize(HINSTANCE hInstance, std::string window_title, std::string window_class, int width,
+bool GameEngine::Start(HINSTANCE hInstance, std::string window_title, std::string window_class, int width,
                             int height)
 {
     timer.Start();
@@ -93,4 +103,13 @@ void GameEngine::RenderFrame()
     }
 
     gfx_.RenderFrame();
+}
+
+void GameEngine::RenderGui()
+{
+}
+
+bool GameEngine::InitializeScene()
+{
+    return true;
 }
