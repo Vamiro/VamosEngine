@@ -20,8 +20,6 @@ public:
     void SetLookAt(float x, float y, float z);
     void UnSetLookAt();
     bool blockInputForImGui = false;
-    std::vector<GameObject*> gameObjects;
-    Camera camera;
     ShaderManager* shaderManager;
     Microsoft::WRL::ComPtr<ID3D11Device> GetDevice() { return device; }
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> GetDeviceContext() { return deviceContext; }

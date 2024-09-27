@@ -3,6 +3,7 @@
 #include "ImGUI/imgui.h"
 #include "Component.h"
 #include "../Rendering/Mesh.h"
+#include "ModelBuffer.h"
 
 class Model : public Component
 {
@@ -16,13 +17,14 @@ public:
     void RenderGUI() override;
     void Draw(const DirectX::SimpleMath::Matrix& worldMatrix, const DirectX::SimpleMath::Matrix& viewProjectionMatrix);
 
-    void SetModelDirectory(const std::string& filePath);
+    void SetModelPath(const std::string& filePath);
     [[nodiscard]] DirectX::SimpleMath::Color GetColor() const { return color; }
     void SetColor(const DirectX::SimpleMath::Color& value) { color = value; }
 
 private:
     DirectX::SimpleMath::Color color = {1.0f, 1.0f, 1.0f, 1.0f};
-    std::vector<Mesh> meshes;
+
+    int modelIndex = -1;
 
     Microsoft::WRL::ComPtr<ID3D11Device> device;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext;

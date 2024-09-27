@@ -29,6 +29,8 @@ public:
     void RenderGui() override;
     bool InitializeScene() override;
 
+    void SetCurrentCamera(Camera* camera) { currentCamera = camera; }
+
 protected:
     Timer timer;
     float deltaTime = 0;
@@ -40,7 +42,9 @@ protected:
     ConstantBuffer<CB_VS_VertexShader> cb_vs_vertexshader;
     ConstantBuffer<CB_PS_PixelShader> cb_ps_pixelshader;
 
+    Camera* currentCamera;
     std::vector<GameObject*> gameObjects;
+
     int currentGameObj = 0;
 
     MyBroadPhaseLayer broadPhaseLayer;

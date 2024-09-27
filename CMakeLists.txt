@@ -90,6 +90,7 @@ add_executable(VamosGameEngine WIN32
         VamosGameEngine/Engine/Core/GameObject.h
         VamosGameEngine/Engine/Components/BoxCollider.cpp
         VamosGameEngine/Engine/Components/BoxCollider.h
+        VamosGameEngine/Engine/Components/ModelBuffer.h
 )
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})

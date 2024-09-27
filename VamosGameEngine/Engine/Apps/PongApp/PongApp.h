@@ -13,6 +13,7 @@ public:
     void Update() override;
     void ResetBall();
     void RenderGui() override;
+    void AddComponentToObject(Object* obj, const std::string& component_name);
     bool InitializeScene() override;
 
 private:

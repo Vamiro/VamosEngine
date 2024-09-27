@@ -2,7 +2,9 @@
 
 #include <Windows.Media.Devices.Core.h>
 
+#include "Engine/Components/BoxCollider.h"
 #include "Engine/Components/Model.h"
+#include "Engine/Components/SphereCollider.h"
 
 
 bool PongApp::Start(HINSTANCE hInstance, std::string window_title, std::string window_class, int width, int height)
@@ -15,19 +17,28 @@ bool PongApp::Start(HINSTANCE hInstance, std::string window_title, std::string w
         {
             isPaused = !isPaused;
         }
-    };
-
-    input_device_.OnKeyDown() += [&](const InputKey& args)
-    {
         if(args == InputKey::F4)
         {
             isClosed = true;
         }
+        if (args == InputKey::D1)
+        {
+            ball->GetComponent<Model>()->SetModelPath("Data\\Objects\\box.obj");
+        }
+        if (args == InputKey::D2)
+        {
+            ball->GetComponent<Model>()->SetModelPath("Data\\Objects\\sphere.obj");
+        }
+    };
+
+    input_device_.OnKeyDown() += [&](const InputKey& args)
+    {
+
     };
 
     input_device_.OnMouseMove().AddLambda([&](const InputDevice::MouseMoveEventArgs& args) {
          if(input_device_.IsKeyDown(InputKey::RightButton))
-             gfx_.camera.transform->AdjustRotation(
+             currentCamera->transform->AdjustRotation(
                     -args.Offset.x * input_device_.MouseSensitivity,
                     args.Offset.y * input_device_.MouseSensitivity,
                     0.0f);
@@ -54,33 +65,28 @@ void PongApp::Update()
 
     if (input_device_.IsKeyDown(InputKey::W))
     {
-       gfx_.camera.transform->AdjustPosition(gfx_.camera.transform->GetForwardVector() * cameraSpeed * deltaTime);
+       currentCamera->transform->AdjustPosition(currentCamera->transform->GetForwardVector() * cameraSpeed * deltaTime);
     }
     if (input_device_.IsKeyDown(InputKey::S))
     {
-        gfx_.camera.transform->AdjustPosition(gfx_.camera.transform->GetBackwardVector() * cameraSpeed * deltaTime);
+        currentCamera->transform->AdjustPosition(currentCamera->transform->GetBackwardVector() * cameraSpeed * deltaTime);
     }
     if (input_device_.IsKeyDown(InputKey::A))
     {
-        gfx_.camera.transform->AdjustPosition(gfx_.camera.transform->GetLeftVector() * cameraSpeed * deltaTime);
+        currentCamera->transform->AdjustPosition(currentCamera->transform->GetLeftVector() * cameraSpeed * deltaTime);
     }
     if (input_device_.IsKeyDown(InputKey::D))
     {
-        gfx_.camera.transform->AdjustPosition(gfx_.camera.transform->GetRightVector() * cameraSpeed * deltaTime);
+        currentCamera->transform->AdjustPosition(currentCamera->transform->GetRightVector() * cameraSpeed * deltaTime);
     }
     if (input_device_.IsKeyDown(InputKey::Q))
     {
-        gfx_.camera.transform->AdjustPosition(gfx_.camera.transform->GetUpVector() * cameraSpeed * deltaTime);
+        currentCamera->transform->AdjustPosition(currentCamera->transform->GetUpVector() * cameraSpeed * deltaTime);
     }
     if (input_device_.IsKeyDown(InputKey::E))
     {
-        gfx_.camera.transform->AdjustPosition(gfx_.camera.transform->GetDownVector() * cameraSpeed * deltaTime);
+        currentCamera->transform->AdjustPosition(currentCamera->transform->GetDownVector() * cameraSpeed * deltaTime);
     }
-    if (input_device_.IsKeyDown(InputKey::D1))
-    { ball->GetComponent<Model>()->SetModelDirectory("Data\\Objects\\box.obj"); }
-    if (input_device_.IsKeyDown(InputKey::D2))
-    { ball->GetComponent<Model>()->SetModelDirectory("Data\\Objects\\sphere.obj"); }
-
 
 
     // if (input_device_.IsKeyDown(InputKey::W) &&
@@ -145,7 +151,7 @@ void PongApp::Update()
     //     ResetBall();
     // }
 
-    gfx_.camera.UpdateViewMatrix();
+    currentCamera->UpdateViewMatrix();
 }
 
 void PongApp::ResetBall()
@@ -192,7 +198,44 @@ void PongApp::RenderGui()
         &gameObjects,
         gameObjects.size());
 
+    if(ImGui::Button("+"))
+    {
+        gameObjects.emplace_back(new GameObject("GameObject" + std::to_string(gameObjects.size())));
+    }
+
     gameObjects[currentGameObj]->RenderComponentsGUI();
+
+
+
+    if(ImGui::Button("Add Component"))
+    {
+        ImGui::OpenPopup("Add Component");
+    }
+
+    if (ImGui::BeginPopupModal("Add Component"))
+    {
+        const char* components[] = { "Model", "BoxCollider", "SphereCollider" };
+        static int selected_component = -1;
+
+        ImGui::Text("Select a component to add:");
+        if (ImGui::ListBox("##components", &selected_component, components, IM_ARRAYSIZE(components)))
+        {
+            if (selected_component >= 0 && selected_component < IM_ARRAYSIZE(components))
+            {
+                AddComponentToObject(gameObjects[currentGameObj], components[selected_component]);
+                selected_component = -1;
+            }
+            ImGui::CloseCurrentPopup();
+        }
+
+        if (ImGui::Button("Close"))
+        {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
 
     ImGui::End();
 
@@ -206,6 +249,27 @@ void PongApp::RenderGui()
     //                        Colors::Red, 0.0f, XMFLOAT2(0.0f, 0.0f), XMFLOAT2(4.0f, 4.0f));
     // gfx_.GetSpriteBatch()->End();
     //Direct2D
+}
+
+void PongApp::AddComponentToObject(Object* obj, const std::string& component_name)
+{
+    // Логика для добавления различных компонентов в зависимости от выбранного элемента
+    if (component_name == "Model")
+    {
+        obj->AddComponent(new Model(*obj, gfx_.GetDevice().Get(), gfx_.GetDeviceContext().Get(), cb_vs_vertexshader, cb_ps_pixelshader));
+    }
+    else if (component_name == "BoxCollider")
+    {
+        obj->AddComponent(new BoxCollider(*obj,  SimpleMath::Vector3::One, physicsSystem, SimpleMath::Vector3::Zero));
+    }
+    else if (component_name == "SphereCollider")
+    {
+        obj->AddComponent(new SphereCollider(*obj,  1, physicsSystem, SimpleMath::Vector3::Zero));
+    }
+
+
+    // Выводим информацию в лог или консоль о добавленном компоненте
+    std::cout << "Added component: " << component_name << " to " << obj->name << std::endl;
 }
 
 bool PongApp::InitializeScene()
@@ -242,7 +306,7 @@ bool PongApp::InitializeScene()
 
         ball = gameObjects.emplace_back(new GameObject("Empty object"));
         ball->AddComponent(new Model(*ball, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
-        ball->GetComponent<Model>()->SetModelDirectory("Data\\Objects\\box.obj");
+        ball->GetComponent<Model>()->SetModelPath("Data\\Objects\\box.obj");
 
 
 
@@ -313,13 +377,17 @@ bool PongApp::InitializeScene()
         // gameObjects[gameObjects.size() - 1]->transform.SetScale(XMFLOAT3(2.0f, 2.0f, 2.0f));
         // gameObjects[gameObjects.size() - 1]->SetColor(SimpleMath::Color(1.0f, 1.0f, 1.0f, 1.0f));
 
-        gfx_.gameObjects = gameObjects;
 
-        gfx_.camera.transform->SetPosition(SimpleMath::Vector3(0.0f, 100.0f, 0.0f));
-        gfx_.camera.transform->SetEulerRotate(SimpleMath::Vector3(0.0f, 90.0f, 0.0f));
+        auto* camera = new Camera();
 
-        gfx_.camera.SetProjectionValues(30.0f, static_cast<float>(gfx_.GetWindowWidth()) / static_cast<float>(gfx_.GetWindowHeight()), 0.1f,
-                                   1000.0f, ORTHOGRAPHIC);
+        camera->transform->SetPosition(SimpleMath::Vector3(0.0f, 10.0f, 0.0f));
+        camera->transform->SetEulerRotate(SimpleMath::Vector3(0.0f, 90.0f, 0.0f));
+
+        camera->SetProjectionValues(90.0f, static_cast<float>(gfx_.GetWindowWidth()) / static_cast<float>(gfx_.GetWindowHeight()), 0.1f,
+                                   1000.0f, PERSPECTIVE);
+
+        gameObjects.emplace_back(camera);
+        SetCurrentCamera(camera);
     }
     catch (COMException& exception)
     {

@@ -1,6 +1,7 @@
 #pragma once
 #include "SimpleMath.h"
 #include "Engine/Components/Transform.h"
+#include "Engine/Core/GameObject.h"
 #include "Engine/Core/Object.h"
 
 using namespace DirectX;
@@ -11,7 +12,7 @@ enum ProjectionType {
 };
 DEFINE_ENUM_FLAG_OPERATORS(ProjectionType)
 
-class Camera : public Object
+class Camera : public GameObject
 {
 public:
     Camera();

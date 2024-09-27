@@ -99,7 +99,8 @@ void GameEngine::RenderFrame()
 
     for (const auto gameObject : gameObjects)
     {
-        gameObject->Render(gfx_.camera.GetViewMatrix() * gfx_.camera.GetProjectionMatrix());
+        if(gameObject->IsVisible())
+            gameObject->Render(currentCamera->GetViewMatrix() * currentCamera->GetProjectionMatrix());
     }
 
     gfx_.RenderFrame();

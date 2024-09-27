@@ -1,9 +1,11 @@
 #include "Model.h"
 #include <utility>
 
+static ModelBuffer modelBuffer;
+
 Model::Model(Object& parent, const Microsoft::WRL::ComPtr<ID3D11Device>& device,
-    const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext,
-    ConstantBuffer<CB_VS_VertexShader>& cb_vs_vertexshader, ConstantBuffer<CB_PS_PixelShader>& cb_ps_pixelshader) :
+             const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext,
+             ConstantBuffer<CB_VS_VertexShader>& cb_vs_vertexshader, ConstantBuffer<CB_PS_PixelShader>& cb_ps_pixelshader) :
         Component(parent, "Model"),
         device(device.Get()),
         deviceContext(deviceContext.Get()),
@@ -18,6 +20,7 @@ Model::~Model()
 
 void Model::Start()
 {
+
 }
 
 void Model::Update()
@@ -41,24 +44,69 @@ void Model::Draw(const DirectX::SimpleMath::Matrix& worldMatrix, const DirectX::
     // Установка буфера перед отрисовкой
     this->deviceContext->PSSetConstantBuffers(1, 1, cb_ps_pixelshader->GetAddressOf());
 
-    for (DWORD i = 0; i < meshes.size(); i++)
+    if(modelIndex != -1)
     {
-        meshes[i].Draw();
+        std::vector<Mesh>& meshes = modelBuffer.modelMap.at(modelBuffer.fileNames.at(modelIndex));
+        for (auto & mesh : meshes)
+        {
+            mesh.Draw();
+        }
     }
 }
 
-void Model::SetModelDirectory(const std::string& filePath)
+void Model::RenderGUI()
 {
+    auto fileNames_getter = [](void* data, int index, const char** output) -> bool
+    {
+        const auto* fileNames = static_cast<std::vector<std::string>*>(data);
+        if (index < 0 || index >= static_cast<int>(fileNames->size()))
+            return false;
+
+        const std::string& current_fileName = (*fileNames)[index];
+        if (current_fileName.empty())
+            return false;
+
+        *output = current_fileName.c_str();
+        return true;
+    };
+
+    ImGui::ColorEdit4("Object Color", reinterpret_cast<float*>(&color));
+    ImGui::Combo("Model",
+        &modelIndex,
+        fileNames_getter,
+        &modelBuffer.fileNames,
+        modelBuffer.fileNames.size());
+}
+
+void Model::SetModelPath(const std::string& filePath)
+{
+    //TODO make buffer for meshes (optimisation)
+
     if (!filePath.empty())
     {
         directory = filePath;
-        try
+        auto model = modelBuffer.modelMap.find(directory);
+
+        if (model != modelBuffer.modelMap.end())
         {
-            this->LoadModel();
+            for (int i = 0; i < modelBuffer.fileNames.size(); i++)
+            {
+                if(filePath == modelBuffer.fileNames[i]) modelIndex = i;
+            }
         }
-        catch (COMException& exception)
+        else
         {
-            ErrorLogger::Log(exception);
+            try
+            {
+                modelBuffer.fileNames.push_back(filePath.c_str());
+                modelBuffer.modelMap.emplace(filePath, std::vector<Mesh>());
+                modelIndex = modelBuffer.fileNames.size() - 1;
+                this->LoadModel();
+            }
+            catch (COMException& exception)
+            {
+                ErrorLogger::Log(exception);
+            }
         }
     }
 }
@@ -77,7 +125,7 @@ bool Model::LoadModel()
 
 void Model::ProcessNode(aiNode* node, const aiScene* scene)
 {
-    meshes.clear();
+    std::vector<Mesh>& meshes = modelBuffer.modelMap.at(modelBuffer.fileNames.at(modelIndex));
     for (UINT i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
@@ -210,11 +258,6 @@ int Model::GetTextureIndex(aiString* pStr)
 {
     assert(pStr->length>=2);
     return atoi(&pStr->C_Str()[1]);
-}
-
-void Model::RenderGUI()
-{
-    ImGui::ColorEdit4("Object Color", reinterpret_cast<float*>(&color));
 }
 
 Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* Scene)

@@ -1,6 +1,6 @@
 #include "Camera.h"
 
-Camera::Camera() : Object("Camera")
+Camera::Camera() : GameObject("Camera", false)
 {
     this->UpdateViewMatrix();
 }
@@ -12,7 +12,7 @@ void Camera::Destroy()
 
 void Camera::SetProjectionValues(float fovDegrees, float aspectRatio, float nearZ, float farZ, ProjectionType type)
 {
-    float fovRadians = DirectX::XMConvertToRadians(fovDegrees);
+    float fovRadians = XMConvertToRadians(fovDegrees);
 
     if (type & PERSPECTIVE)
     {
