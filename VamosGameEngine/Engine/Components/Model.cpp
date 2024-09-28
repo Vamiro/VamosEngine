@@ -1,5 +1,4 @@
 #include "Model.h"
-#include <utility>
 
 static ModelBuffer modelBuffer;
 

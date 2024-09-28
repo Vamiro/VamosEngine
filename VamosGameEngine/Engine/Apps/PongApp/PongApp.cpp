@@ -1,12 +1,5 @@
 ﻿#include "PongApp.h"
 
-#include <Windows.Media.Devices.Core.h>
-
-#include "Engine/Components/BoxCollider.h"
-#include "Engine/Components/Model.h"
-#include "Engine/Components/SphereCollider.h"
-
-
 bool PongApp::Start(HINSTANCE hInstance, std::string window_title, std::string window_class, int width, int height)
 {
     GameEngine::Start(hInstance, window_title, window_class, width, height);
@@ -28,6 +21,19 @@ bool PongApp::Start(HINSTANCE hInstance, std::string window_title, std::string w
         if (args == InputKey::D2)
         {
             ball->GetComponent<Model>()->SetModelPath("Data\\Objects\\sphere.obj");
+        }
+        if (args == InputKey::D3)
+        {
+            physicsEngine->GetPhysicsSystem()->GetBodyInterface().AddImpulse(
+                ball->GetComponent<ColliderComponent>()->GetBody()->GetID(),
+                JPH::Vec3Arg(0.0f, 10.0f, 0.0f));
+            JPH::Vec3 velocity = physicsEngine->GetPhysicsSystem()->GetBodyInterface().GetLinearVelocity(
+                ball->GetComponent<ColliderComponent>()->GetBody()->GetID());
+            std::cout << "Velocity: " << velocity.GetX() << " " << velocity.GetY() << " " << velocity.GetZ() << std::endl;
+
+            JPH::RVec3 position = physicsEngine->GetPhysicsSystem()->GetBodyInterface().GetCenterOfMassPosition(
+                ball->GetComponent<ColliderComponent>()->GetBody()->GetID());
+            std::cout << "Position: " << position.GetX() << " " << position.GetY() << " " << position.GetZ() << std::endl;
         }
     };
 
@@ -88,84 +94,7 @@ void PongApp::Update()
         currentCamera->transform->AdjustPosition(currentCamera->transform->GetDownVector() * cameraSpeed * deltaTime);
     }
 
-
-    // if (input_device_.IsKeyDown(InputKey::W) &&
-    //     playerRight->transform.GetPositionFloat3().z + playerRight->transform.GetScaleFloat3().z < wallTop->transform.GetPositionFloat3().z)
-    //     playerRight->transform.AdjustPosition(0, 0, 0.013f * deltaTime);
-    //
-    // if (input_device_.IsKeyDown(InputKey::S) &&
-    //     playerRight->transform.GetPositionFloat3().z - playerRight->transform.GetScaleFloat3().z > wallBottom->transform.GetPositionFloat3().z)
-    //     playerRight->transform.AdjustPosition(0, 0, -0.013f * deltaTime);
-    //
-    // if (input_device_.IsKeyDown(InputKey::Up) &&
-    //     playerLeft->transform.GetPositionFloat3().z + playerLeft->transform.GetScaleFloat3().z < wallTop->transform.GetPositionFloat3().z)
-    //     playerLeft->transform.AdjustPosition(0, 0, 0.013f * deltaTime);
-    //
-    // if (input_device_.IsKeyDown(InputKey::Down) &&
-    //     playerLeft->transform.GetPositionFloat3().z - playerLeft->transform.GetScaleFloat3().z > wallBottom->transform.GetPositionFloat3().z)
-    //     playerLeft->transform.AdjustPosition(0, 0, -0.013f * deltaTime);
-    //
-    // // Движение мяча
-    // ball->transform.AdjustPosition(currentSpeed.x * deltaTime, 0.0f, currentSpeed.z * deltaTime);
-    //
-    // // Обновление Bounding
-    // ball->SetBoundingCenter(ball->transform.GetPositionFloat3());
-    // playerLeft->SetBoundingCenter(playerLeft->transform.GetPositionFloat3());
-    // playerRight->SetBoundingCenter(playerRight->transform.GetPositionFloat3());
-    // //Jolt
-    // if (ball->GetBoundingSphere().Intersects(playerLeft->GetBoundingBox()))
-    // {
-    //     currentSpeed.x = -speed.x;
-    //     float offsetZ = ball->transform.GetPositionFloat3().z - playerLeft->transform.GetPositionFloat3().z;
-    //     currentSpeed.z = offsetZ / playerRight->transform.GetScaleFloat3().z * maxSpeed;
-    //     speed.z = fabs(currentSpeed.z);
-    // }
-    //
-    // if (ball->GetBoundingSphere().Intersects(playerRight->GetBoundingBox()))
-    // {
-    //     currentSpeed.x = speed.x;
-    //     float offsetZ = ball->transform.GetPositionFloat3().z - playerRight->transform.GetPositionFloat3().z;
-    //     currentSpeed.z = offsetZ / playerRight->transform.GetScaleFloat3().z * maxSpeed;
-    //     speed.z = fabs(currentSpeed.z);
-    // }
-    //
-    // if (ball->GetBoundingSphere().Intersects(wallTop->GetBoundingBox()))
-    // {
-    //     currentSpeed.z = -speed.z;
-    // }
-    //
-    // if (ball->GetBoundingSphere().Intersects(wallBottom->GetBoundingBox()))
-    // {
-    //     currentSpeed.z = speed.z;
-    // }
-    //
-    // if (ball->GetBoundingSphere().Intersects(wallRight->GetBoundingBox()))
-    // {
-    //     scoreLeft++;
-    //     ResetBall();
-    // }
-    //
-    // if (ball->GetBoundingSphere().Intersects(wallLeft->GetBoundingBox()))
-    // {
-    //     scoreRight++;
-    //     ResetBall();
-    // }
-
     currentCamera->UpdateViewMatrix();
-}
-
-void PongApp::ResetBall()
-{
-    ball->transform->SetPosition(XMFLOAT3(0.0f, 0.0f, 0.0f));
-
-    // Рандомное направление движения мяча
-    float randomDirectionX = (rand() % 2 == 0) ? 1.0f : -1.0f;  // Лево/право
-    float randomDirectionZ = (((rand() % 100) / 50.0f) - 1.0f) / 80.0f;  // Рандомный угол
-    randomDirectionZ = randomDirectionZ == 0.0f ? 0.15f : randomDirectionZ;
-    randomDirectionZ = fabs(randomDirectionZ) >= maxSpeed ? speed.z : randomDirectionZ;
-
-    currentSpeed = SimpleMath::Vector3(speed.x * randomDirectionX, 0.0f, randomDirectionZ);
-    speed.z = fabs(currentSpeed.z);
 }
 
 void PongApp::RenderGui()
@@ -214,7 +143,7 @@ void PongApp::RenderGui()
 
     if (ImGui::BeginPopupModal("Add Component"))
     {
-        const char* components[] = { "Model", "BoxCollider", "SphereCollider" };
+        const char* components[] = { "Model" };
         static int selected_component = -1;
 
         ImGui::Text("Select a component to add:");
@@ -258,14 +187,6 @@ void PongApp::AddComponentToObject(Object* obj, const std::string& component_nam
     {
         obj->AddComponent(new Model(*obj, gfx_.GetDevice().Get(), gfx_.GetDeviceContext().Get(), cb_vs_vertexshader, cb_ps_pixelshader));
     }
-    else if (component_name == "BoxCollider")
-    {
-        obj->AddComponent(new BoxCollider(*obj,  SimpleMath::Vector3::One, physicsSystem, SimpleMath::Vector3::Zero));
-    }
-    else if (component_name == "SphereCollider")
-    {
-        obj->AddComponent(new SphereCollider(*obj,  1, physicsSystem, SimpleMath::Vector3::Zero));
-    }
 
 
     // Выводим информацию в лог или консоль о добавленном компоненте
@@ -304,9 +225,27 @@ bool PongApp::InitializeScene()
         // playerRight->GetComponent<BoxCollider>()->UpdatePosition();
         // gameObjects.emplace_back(playerRight);
 
-        ball = gameObjects.emplace_back(new GameObject("Empty object"));
+        ball = gameObjects.emplace_back(new GameObject("Obj2"));
+        ball->transform->SetPosition(SimpleMath::Vector3(0.0f, 5.0f, 0.0f));
         ball->AddComponent(new Model(*ball, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
-        ball->GetComponent<Model>()->SetModelPath("Data\\Objects\\box.obj");
+        ball->GetComponent<Model>()->SetModelPath("Data\\Objects\\sphere.obj");
+        auto* c = new ColliderComponent(*ball, "Collider", physicsEngine->GetPhysicsSystem(), JPH::EMotionType::Dynamic, Layers::MOVING);
+        c->SetShape(new JPH::SphereShape(1.0f));
+        ball->AddComponent(c);
+
+        floor = gameObjects.emplace_back(new GameObject("Obj2"));
+        floor->AddComponent(new Model(*floor, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
+        floor->GetComponent<Model>()->SetModelPath("Data\\Objects\\box.obj");
+        c = new ColliderComponent(*floor, "Collider", physicsEngine->GetPhysicsSystem(), JPH::EMotionType::Static, Layers::NON_MOVING);
+        c->SetShape(new JPH::BoxShape(JPH::Vec3(10.0f, 0.5f, 10.0f)));
+        floor->AddComponent(c);
+
+        // ball = gameObjects.emplace_back(new GameObject("Obj1"));
+        // ball->AddComponent(new Model(*ball, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
+        // ball->GetComponent<Model>()->SetModelPath("Data\\Objects\\sphere.obj");
+        // c = new ColliderComponent(*ball, "Collider", physicsEngine->GetPhysicsSystem());
+        // c->SetShape(new JPH::SphereShape(1.0f));
+        // ball->AddComponent(c);
 
 
 

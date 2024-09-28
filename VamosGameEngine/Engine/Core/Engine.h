@@ -19,6 +19,7 @@ public:
 	[[nodiscard]] InputDevice& GetInputDevice() { return input_device_; }
 	[[nodiscard]] Graphics& GetGraphics() { return gfx_; }
 	bool IsClosed() const { return isClosed; }
+	bool IsPaused() const { return isPaused; }
 
 protected:
 	bool isClosed = false;

@@ -1,5 +1,8 @@
 ﻿#include "Transform.h"
 
+#include "ColliderComponent.h"
+#include "Engine/Core/Object.h"
+
 Transform::Transform(Object& parent) : Component(parent, "Transform")
 {
 }
@@ -19,12 +22,30 @@ void Transform::Update()
 void Transform::RenderGUI()
 {
     float pos[3] = {position.x, position.y, position.z};
+    float euler[3] = {eulerAngles.x, eulerAngles.y, eulerAngles.z};
     float scale[3] = {this->scale.x, this->scale.y, this->scale.z};
 
     ImGui::DragFloat3("Position", pos, 0.1f);
+    ImGui::DragFloat3("Euler", euler, 0.1f);
     ImGui::DragFloat3("Scale", scale, 0.1f);
 
+
+    SimpleMath::Vector3 newPos = SimpleMath::Vector3(pos[0], pos[1], pos[2]);
+    SimpleMath::Vector3 newEuler = SimpleMath::Vector3(euler[0], euler[1], euler[2]);
+
+    if (auto* cc = this->parent->GetComponent<ColliderComponent>()) {
+        if (ImGui::IsMouseDown(0)) {
+            cc->SetActivation(false); // Deactivate physics
+            cc->SetPositionAndRotation(this->position, this->rotation);
+            cc->SetScale(this->scale);
+        } else
+        {
+            cc->SetActivation(true); // Activate physics
+        }
+    }
+
     SetPosition(SimpleMath::Vector3(pos[0], pos[1], pos[2]));
+    SetEulerRotate(SimpleMath::Vector3(euler[0], euler[1], euler[2]));
     SetScale(SimpleMath::Vector3(scale[0], scale[1], scale[2]));
 }
 
@@ -44,7 +65,6 @@ void Transform::UpdateWorldMatrix()
     this->vec_right = SimpleMath::Vector3::Transform(DEFAULT_RIGHT_VECTOR, rotationMatrix);
     this->vec_up = SimpleMath::Vector3::Transform(DEFAULT_UP_VECTOR, rotationMatrix);
     this->vec_down = SimpleMath::Vector3::Transform(DEFAULT_DOWN_VECTOR, rotationMatrix);
-
 }
 
 const SimpleMath::Vector3& Transform::GetPositionVector() const

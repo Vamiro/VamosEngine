@@ -1,6 +1,8 @@
 #pragma once
+#include <windows.h>
+#include <comdef.h>
+
 #include "COMException.h"
-#include <Windows.h>
 
 class ErrorLogger
 {

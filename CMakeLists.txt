@@ -83,14 +83,14 @@ add_executable(VamosGameEngine WIN32
         VamosGameEngine/Engine/Apps/PongApp/GameObjects/BoxObject.cpp
         VamosGameEngine/Engine/Apps/PongApp/GameObjects/BoxObject.h
         VamosGameEngine/Engine/Components/Component.h
-        VamosGameEngine/Engine/Components/SphereCollider.h
-        VamosGameEngine/Engine/Physics/PhysicsLayers.h
-        VamosGameEngine/Engine/Components/SphereCollider.cpp
         VamosGameEngine/Engine/Core/GameObject.cpp
         VamosGameEngine/Engine/Core/GameObject.h
-        VamosGameEngine/Engine/Components/BoxCollider.cpp
-        VamosGameEngine/Engine/Components/BoxCollider.h
         VamosGameEngine/Engine/Components/ModelBuffer.h
+        VamosGameEngine/Engine/Physics/PhysicsEngine.cpp
+        VamosGameEngine/Engine/Physics/PhysicsEngine.h
+        VamosGameEngine/Engine/Components/ColliderComponent.cpp
+        VamosGameEngine/Engine/Components/ColliderComponent.h
+        VamosGameEngine/Engine/Utilities/JsonUtil.h
 )
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})

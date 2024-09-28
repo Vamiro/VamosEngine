@@ -1,5 +1,4 @@
 #include "GameEngine.h"
-#include <iostream>
 
 GameEngine::~GameEngine()
 {
@@ -8,8 +7,6 @@ GameEngine::~GameEngine()
         gameObject->Destroy();
         delete gameObject;
     }
-    delete tempAllocator;
-    delete jobSystem;
 }
 
 bool GameEngine::Start(HINSTANCE hInstance, std::string window_title, std::string window_class, int width,
@@ -27,34 +24,12 @@ bool GameEngine::Start(HINSTANCE hInstance, std::string window_title, std::strin
     if (!this->InitializeScene())
         return false;
 
+    for (auto* gameObject : gameObjects)
+    {
+        gameObject->Start();
+    }
+
     return true;
-}
-
-void GameEngine::InitializePhysics()
-{
-    // Инициализация аллокатора
-    JPH::RegisterDefaultAllocator();
-
-    // Параметры физической системы
-    constexpr JPH::uint cMaxBodies = 1024;                  // Максимум тел в мире
-    constexpr JPH::uint cNumBodyMutexes = 0;                // Количество мьютексов для тел
-    constexpr JPH::uint cMaxBodyPairs = 4096;               // Максимум пар тел для коллизий
-    constexpr JPH::uint cMaxContactConstraints = 1024;      // Максимум контактных ограничений
-
-    // Инициализация физической системы
-    physicsSystem.Init(cMaxBodies,
-                      cNumBodyMutexes,
-                      cMaxBodyPairs,
-                      cMaxContactConstraints,
-                      broadPhaseLayer,
-                      objectVsBroadPhaseLayerFilter,
-                      objectLayerPairFilter);
-
-    // Инициализация временного аллокатора (создаётся один раз)
-    tempAllocator = new JPH::TempAllocatorImpl(10 * 1024 * 1024); // 10 MB
-
-    // Инициализация JobSystem (создаётся один раз)
-    jobSystem = new JPH::JobSystemThreadPool(4, 4, 1000); // 4 рабочих потока
 }
 
 bool GameEngine::ProcessMessages()
@@ -72,21 +47,13 @@ void GameEngine::Update()
         gameObject->Update(deltaTime);
     }
 
-    UpdatePhysics(deltaTime);
+    physicsEngine->UpdatePhysics(deltaTime);
 }
 
-void GameEngine::UpdatePhysics(float deltaTime)
+void GameEngine::InitializePhysics()
 {
-    const int cCollisionSteps = 1;         // Количество шагов для коллизий
-
-    // Обновляем физическую систему, передавая аллокатор и систему задач
-    JPH::EPhysicsUpdateError result = physicsSystem.Update(deltaTime, cCollisionSteps, tempAllocator, jobSystem);
-
-    if (result != JPH::EPhysicsUpdateError::None)
-    {
-        // Обрабатываем ошибки обновления физики
-        std::cerr << "Physics update error occurred: " << static_cast<int>(result) << std::endl;
-    }
+    physicsEngine = new PhysicsEngine();
+    physicsEngine->Initialize();
 }
 
 void GameEngine::RenderFrame()
