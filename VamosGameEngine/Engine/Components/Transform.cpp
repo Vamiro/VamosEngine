@@ -1,5 +1,7 @@
 ﻿#include "Transform.h"
 
+#include <iostream>
+
 #include "ColliderComponent.h"
 #include "Engine/Core/Object.h"
 
@@ -26,27 +28,30 @@ void Transform::RenderGUI()
     float scale[3] = {this->scale.x, this->scale.y, this->scale.z};
 
     ImGui::DragFloat3("Position", pos, 0.1f);
+    bool it = ImGui::IsItemActive();
+    if(ImGui::IsItemActive())
+        SetPosition(SimpleMath::Vector3(pos[0], pos[1], pos[2]));
+
     ImGui::DragFloat3("Euler", euler, 0.1f);
-    ImGui::DragFloat3("Scale", scale, 0.1f);
+    it = it || ImGui::IsItemActive();
+    if(ImGui::IsItemActive())
+        SetEulerRotate(SimpleMath::Vector3(euler[0], euler[1], euler[2]));
 
+    ImGui::DragFloat3("Scale", scale, 0.1f, 0.1f, 10000.0f);
+    if(ImGui::IsItemActive())
+        SetScale(SimpleMath::Vector3(scale[0], scale[1], scale[2]));
 
-    SimpleMath::Vector3 newPos = SimpleMath::Vector3(pos[0], pos[1], pos[2]);
-    SimpleMath::Vector3 newEuler = SimpleMath::Vector3(euler[0], euler[1], euler[2]);
 
     if (auto* cc = this->parent->GetComponent<ColliderComponent>()) {
-        if (ImGui::IsMouseDown(0)) {
+        if (ImGui::IsMouseDragging(0) && it) {
             cc->SetActivation(false); // Deactivate physics
             cc->SetPositionAndRotation(this->position, this->rotation);
-            cc->SetScale(this->scale);
         } else
         {
             cc->SetActivation(true); // Activate physics
         }
     }
 
-    SetPosition(SimpleMath::Vector3(pos[0], pos[1], pos[2]));
-    SetEulerRotate(SimpleMath::Vector3(euler[0], euler[1], euler[2]));
-    SetScale(SimpleMath::Vector3(scale[0], scale[1], scale[2]));
 }
 
 void Transform::UpdateWorldMatrix()
@@ -65,6 +70,8 @@ void Transform::UpdateWorldMatrix()
     this->vec_right = SimpleMath::Vector3::Transform(DEFAULT_RIGHT_VECTOR, rotationMatrix);
     this->vec_up = SimpleMath::Vector3::Transform(DEFAULT_UP_VECTOR, rotationMatrix);
     this->vec_down = SimpleMath::Vector3::Transform(DEFAULT_DOWN_VECTOR, rotationMatrix);
+
+
 }
 
 const SimpleMath::Vector3& Transform::GetPositionVector() const
@@ -85,6 +92,7 @@ const SimpleMath::Quaternion& Transform::GetRotationQuaternion() const
 void Transform::SetPosition(const SimpleMath::Vector3& pos)
 {
     this->position = pos;
+    this->hasChanges = true;
     this->UpdateWorldMatrix();
 }
 
@@ -96,6 +104,7 @@ void Transform::AdjustPosition(const SimpleMath::Vector3& pos)
 void Transform::SetScale(const SimpleMath::Vector3& scale)
 {
     this->scale = scale;
+    this->hasChanges = true;
     this->UpdateWorldMatrix();
 }
 
@@ -108,6 +117,7 @@ void Transform::SetRotation(SimpleMath::Quaternion quaternion)
 {
     eulerAngles = quaternion.ToEuler();
     rotation = quaternion;
+    this->hasChanges = true;
     UpdateWorldMatrix();
 }
 
@@ -115,6 +125,7 @@ void Transform::SetEulerRotate(const SimpleMath::Vector3& eulerAngle)
 {
     eulerAngles = eulerAngle;
     rotation = SimpleMath::Quaternion::CreateFromYawPitchRoll(Radians(eulerAngle.x), Radians(eulerAngle.y), Radians(eulerAngle.z));
+    this->hasChanges = true;
     UpdateWorldMatrix();
 }
 
@@ -122,6 +133,7 @@ void Transform::SetRadianRotate(const SimpleMath::Vector3& radians)
 {
     eulerAngles = SimpleMath::Vector3(Degrees(radians.x), Degrees(radians.y), Degrees(radians.z));
     rotation = SimpleMath::Quaternion::CreateFromYawPitchRoll(radians.x,radians.y,radians.z);
+    this->hasChanges = true;
     UpdateWorldMatrix();
 }
 
@@ -143,6 +155,7 @@ void Transform::SetLookAtPos(const SimpleMath::Vector3& lookAtPos)
     direction.Normalize();
 
     SimpleMath::Quaternion lookAtQuat = SimpleMath::Quaternion::CreateFromRotationMatrix(SimpleMath::Matrix::CreateLookAt(this->position, lookAtPos, DEFAULT_UP_VECTOR));
+    this->hasChanges = true;
     this->SetRotation(lookAtQuat);
 }
 

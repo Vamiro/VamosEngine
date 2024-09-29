@@ -91,6 +91,7 @@ add_executable(VamosGameEngine WIN32
         VamosGameEngine/Engine/Components/ColliderComponent.cpp
         VamosGameEngine/Engine/Components/ColliderComponent.h
         VamosGameEngine/Engine/Utilities/JsonUtil.h
+        VamosGameEngine/Engine/Core/Scene.h
 )
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})

@@ -13,6 +13,8 @@
 #include <Jolt/Physics/Collision/Shape/Shape.h>
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include "Jolt/RegisterTypes.h"
+#include "Jolt/Renderer/DebugRenderer.h"
 
 
 #include <cstdarg>
@@ -83,6 +85,16 @@ public:
     virtual void OnBodyDeactivated(const JPH::BodyID &inBodyID, JPH::uint64 inBodyUserData) override;
 };
 
+class MyDebugRenderer : public JPH::DebugRenderer {
+public:
+    virtual void DrawLine(JPH::RVec3Arg inFrom, JPH::RVec3Arg inTo, JPH::ColorArg inColor) override;
+    virtual void DrawTriangle(JPH::RVec3Arg inV1, JPH::RVec3Arg inV2, JPH::RVec3Arg inV3, JPH::ColorArg inColor, ECastShadow inCastShadow) override;
+    virtual Batch CreateTriangleBatch(const Triangle* inTriangles, int inTriangleCount) override;
+    virtual Batch CreateTriangleBatch(const Vertex* inVertices, int inVertexCount, const JPH::uint32* inIndices, int inIndexCount) override;
+    virtual void DrawGeometry(JPH::RMat44Arg inModelMatrix, const JPH::AABox& inWorldSpaceBounds, float inLODScaleSq, JPH::ColorArg inModelColor, const GeometryRef& inGeometry, ECullMode inCullMode, ECastShadow inCastShadow, EDrawMode inDrawMode) override;
+    virtual void DrawText3D(JPH::RVec3Arg inPosition, const std::string_view& inString, JPH::ColorArg inColor, float inHeight) override;
+};
+
 class PhysicsEngine {
 public:
     PhysicsEngine();
@@ -90,6 +102,7 @@ public:
     void Initialize(float gravityScale = 1.0f);
     void UpdatePhysics(float deltaTime);
     JPH::PhysicsSystem* GetPhysicsSystem();
+    JPH::DebugRenderer* GetDebugRenderer() const;
     void Cleanup();
 
 private:
@@ -109,6 +122,7 @@ private:
     ObjectVsBroadPhaseLayerFilterImpl object_vs_broadphase_layer_filter;
     ObjectLayerPairFilterImpl object_vs_object_layer_filter;
     JPH::BodyInterface& body_interface = physics_system.GetBodyInterface();
+    JPH::DebugRenderer* debug_renderer;
 };
 
 #endif // PHYSICS_ENGINE_H

@@ -84,6 +84,8 @@ void Model::SetModelPath(const std::string& filePath)
     if (!filePath.empty())
     {
         directory = filePath;
+        this->filePath = filePath;
+
         auto model = modelBuffer.modelMap.find(directory);
 
         if (model != modelBuffer.modelMap.end())

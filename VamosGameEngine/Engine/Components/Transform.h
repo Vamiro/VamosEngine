@@ -71,4 +71,6 @@ private:
     SimpleMath::Vector3 vec_backward;
     SimpleMath::Vector3 vec_up;
     SimpleMath::Vector3 vec_down;
+
+    bool hasChanges;
 };

@@ -3,11 +3,12 @@
 #include <ImGUI/imgui_impl_dx11.h>
 #include <ImGUI/imgui_impl_win32.h>
 
-#include "GameObject.h"
+#include "Engine/Core/Scene.h"
 #include "Engine.h"
 #include "Engine/Graphics/ConstantBuffer.h"
 #include "Engine/Physics/PhysicsEngine.h"
 #include "Engine/Utilities/Timer.h"
+
 
 
 class GameEngine : public Engine {
@@ -33,7 +34,7 @@ protected:
 
     Camera* currentCamera;
     std::vector<GameObject*> gameObjects;
-
+    Scene currentScene;
     int currentGameObj = 0;
 
     PhysicsEngine* physicsEngine;

@@ -1,7 +1,8 @@
 ﻿#include "PhysicsEngine.h"
 #include <iostream>
+#include <DirectXMath.h>
+#include <SimpleMath.h>
 
-#include "Jolt/RegisterTypes.h"
 
 static void TraceImpl(const char *inFMT, ...)
 {
@@ -117,6 +118,37 @@ void MyBodyActivationListener::OnBodyDeactivated(const JPH::BodyID &inBodyID, JP
     std::cout << "A body went to sleep" << std::endl;
 }
 
+void MyDebugRenderer::DrawLine(JPH::RVec3Arg inFrom, JPH::RVec3Arg inTo, JPH::ColorArg inColor)
+{
+}
+
+void MyDebugRenderer::DrawTriangle(JPH::RVec3Arg inV1, JPH::RVec3Arg inV2, JPH::RVec3Arg inV3, JPH::ColorArg inColor,
+    ECastShadow inCastShadow)
+{
+}
+
+JPH::DebugRenderer::Batch MyDebugRenderer::CreateTriangleBatch(const Triangle* inTriangles, int inTriangleCount)
+{
+    return nullptr;
+}
+
+JPH::DebugRenderer::Batch MyDebugRenderer::CreateTriangleBatch(const Vertex* inVertices, int inVertexCount,
+    const JPH::uint32* inIndices, int inIndexCount)
+{
+    return nullptr;
+}
+
+void MyDebugRenderer::DrawGeometry(JPH::RMat44Arg inModelMatrix, const JPH::AABox& inWorldSpaceBounds,
+    float inLODScaleSq, JPH::ColorArg inModelColor, const GeometryRef& inGeometry, ECullMode inCullMode,
+    ECastShadow inCastShadow, EDrawMode inDrawMode)
+{
+}
+
+void MyDebugRenderer::DrawText3D(JPH::RVec3Arg inPosition, const std::string_view& inString, JPH::ColorArg inColor,
+    float inHeight)
+{
+}
+
 PhysicsEngine::PhysicsEngine(): temp_allocator(nullptr), job_system(nullptr)
 {
 }
@@ -133,7 +165,6 @@ void PhysicsEngine::Initialize(float gravityScale)
     JPH::Trace = TraceImpl;
     JPH_IF_ENABLE_ASSERTS(JPH::AssertFailed = AssertFailedImpl;)
 
-
     JPH::Factory::sInstance = new JPH::Factory();
     JPH::RegisterTypes();
 
@@ -144,7 +175,7 @@ void PhysicsEngine::Initialize(float gravityScale)
 
     physics_system.SetBodyActivationListener(&body_activation_listener);
     physics_system.SetContactListener(&contact_listener);
-    physics_system.SetGravity(JPH::Vec3(0.0f, -9.81f / 10 * gravityScale, 0.0f));
+    physics_system.SetGravity(JPH::Vec3(0.0f, -9.81f / 100 * gravityScale, 0.0f));
 }
 
 void PhysicsEngine::UpdatePhysics(float deltaTime)
@@ -155,6 +186,11 @@ void PhysicsEngine::UpdatePhysics(float deltaTime)
 JPH::PhysicsSystem* PhysicsEngine::GetPhysicsSystem()
 {
     return &physics_system;
+}
+
+JPH::DebugRenderer* PhysicsEngine::GetDebugRenderer() const
+{
+    return debug_renderer;
 }
 
 void PhysicsEngine::Cleanup()

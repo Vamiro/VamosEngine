@@ -18,6 +18,7 @@ public:
     void Draw(const DirectX::SimpleMath::Matrix& worldMatrix, const DirectX::SimpleMath::Matrix& viewProjectionMatrix);
 
     void SetModelPath(const std::string& filePath);
+    [[nodiscard]] std::string GetModelPath() const { return filePath; }
     [[nodiscard]] DirectX::SimpleMath::Color GetColor() const { return color; }
     void SetColor(const DirectX::SimpleMath::Color& value) { color = value; }
 
@@ -32,6 +33,7 @@ private:
     ConstantBuffer<CB_VS_VertexShader>* cb_vs_vertexshader;
     ConstantBuffer<CB_PS_PixelShader>* cb_ps_pixelshader;
     std::string directory = "";
+    std::string filePath = "";
 
     bool LoadModel();
     void ProcessNode(aiNode* node, const aiScene* Scene);

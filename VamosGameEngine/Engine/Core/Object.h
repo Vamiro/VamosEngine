@@ -34,6 +34,8 @@ public:
 
     void AddComponent(Component* component){ components.push_back(component); }
 
+    [[nodiscard]] std::vector<Component*> GetComponents() const { return components; }
+
     void RenderComponentsGUI() const;
 
 protected:
