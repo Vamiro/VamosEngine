@@ -2,13 +2,19 @@
 #include <ImGUI/imgui.h>
 #include <ImGUI/imgui_impl_dx11.h>
 #include <ImGUI/imgui_impl_win32.h>
+#include <string>
 
-#include "Engine/Core/Scene.h"
 #include "Engine.h"
+#include "GameObject.h"
 #include "Engine/Graphics/ConstantBuffer.h"
 #include "Engine/Physics/PhysicsEngine.h"
 #include "Engine/Utilities/Timer.h"
+#include "Engine/Components/Model.h"
 
+struct Scene {
+    std::string name;
+    std::vector<GameObject*> objects;
+};
 
 
 class GameEngine : public Engine {

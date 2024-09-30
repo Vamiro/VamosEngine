@@ -1,9 +1,9 @@
 ﻿#include "ColliderComponent.h"
 
-#include "Engine/Core/GameEngine.h"
+#include "Transform.h"
+#include "Engine/Core/GameObject.h"
 
-
-ColliderComponent::ColliderComponent(Object& parent, JPH::PhysicsSystem* physicsSystem,
+ColliderComponent::ColliderComponent(GameObject& parent, JPH::PhysicsSystem* physicsSystem,
                                      JPH::EMotionType motionType,  JPH::ObjectLayer layer):
         Component(parent, "ColliderComponent"),
         mBody(nullptr),
@@ -30,6 +30,8 @@ void ColliderComponent::Start() {
                                                                   JPH::Vec3(pos.x, pos.y, pos.z),
                                                                   JPH::Quat(quat.x, quat.y, quat.z, quat.w),
                                                                   JPH::EActivation::Activate);
+        mBody->SetUserData(reinterpret_cast<JPH::uint64>(this));
+        OnCollision().BindLambda([](const ColliderComponent* other){}); // Empty lambda
     }
 }
 
@@ -133,4 +135,24 @@ void ColliderComponent::SetPositionAndRotation(const SimpleMath::Vector3& positi
     mPhysicsSystem->GetBodyInterface().SetPositionAndRotation(mBody->GetID(),
         JPH::Vec3(position.x, position.y, position.z),
         JPH::Quat(rotation.x, rotation.y, rotation.z, rotation.w), JPH::EActivation::DontActivate);
+
+}
+
+void ColliderComponent::SetPosition(const SimpleMath::Vector3& position) const
+{
+    mPhysicsSystem->GetBodyInterface().SetPosition(mBody->GetID(),
+        JPH::Vec3(position.x, position.y, position.z), JPH::EActivation::DontActivate);
+
+}
+
+void ColliderComponent::SetRotation(const SimpleMath::Quaternion& rotation) const
+{
+    mPhysicsSystem->GetBodyInterface().SetRotation(mBody->GetID(),
+        JPH::Quat(rotation.x, rotation.y, rotation.z, rotation.w), JPH::EActivation::DontActivate);
+
+}
+
+void ColliderComponent::Destroy()
+{
+    mBody = nullptr;
 }

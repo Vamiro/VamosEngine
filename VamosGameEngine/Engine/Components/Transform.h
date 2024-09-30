@@ -1,19 +1,21 @@
 ﻿#pragma once
+#include <iostream>
+#include <ImGUI/imgui.h>
 
-#include "ImGUI/imgui.h"
-#include "SimpleMath.h"
 #include "Component.h"
+#include <SimpleMath.h>
 
 using namespace DirectX;
 
 class Transform : public Component
 {
 public:
-    Transform(Object& parent);
+    Transform(GameObject& parent);
     ~Transform() override;
 
     void Start() override;
     void Update() override;
+    void Destroy() override;
     void RenderGUI() override;
 
     const SimpleMath::Vector3& GetPositionVector() const;
@@ -28,11 +30,13 @@ public:
 
     void SetRotation(SimpleMath::Quaternion quaternion);
     void SetEulerRotate(const SimpleMath::Vector3& eulerAngle);
-    void SetRadianRotate(const SimpleMath::Vector3& radianAngle);
+    void SetLocalRotation(const SimpleMath::Quaternion& localRotation);
     void AdjustRotation(const SimpleMath::Vector3& eulerAngle);
     void AdjustRotation(float roll, float pitch, float yaw);
 
     void SetLookAtPos(const SimpleMath::Vector3& lookAtPos);
+    void RotateAround(const SimpleMath::Vector3& point, const SimpleMath::Quaternion& rotation);
+    void KeepDistance(const SimpleMath::Vector3& targetPosition, float distance);
 
     const SimpleMath::Vector3& GetForwardVector();
     const SimpleMath::Vector3& GetRightVector();
@@ -41,24 +45,21 @@ public:
     const SimpleMath::Vector3& GetUpVector();
     const SimpleMath::Vector3& GetDownVector();
 
+    void SetParentWorldMatrix(const SimpleMath::Matrix& parentWorldMatrix);
     void UpdateWorldMatrix();
     [[nodiscard]] SimpleMath::Matrix GetWorldMatrix() const { return worldMatrix; }
 
+
     const SimpleMath::Vector3 DEFAULT_FORWARD_VECTOR = SimpleMath::Vector3(0.0f, 0.0f, 1.0f);
+    const SimpleMath::Vector3 DEFAULT_BACKWARD_VECTOR = SimpleMath::Vector3(0.0f, 0.0f, -1.0f);
+    const SimpleMath::Vector3 DEFAULT_LEFT_VECTOR = SimpleMath::Vector3(-1.0f, 0.0f, 0.0f);
+    const SimpleMath::Vector3 DEFAULT_RIGHT_VECTOR = SimpleMath::Vector3(1.0f, 0.0f, 0.0f);
     const SimpleMath::Vector3 DEFAULT_UP_VECTOR = SimpleMath::Vector3(0.0f, 1.0f, 0.0f);
     const SimpleMath::Vector3 DEFAULT_DOWN_VECTOR = SimpleMath::Vector3(0.0f, -1.0f, 0.0f);
-    const SimpleMath::Vector3 DEFAULT_BACKWARD_VECTOR = SimpleMath::Vector3(0.0f, 0.0f, -1.0f);
-    const SimpleMath::Vector3 DEFAULT_LEFT_VECTOR = SimpleMath::Vector3(1.0f, 0.0f, 0.0f);
-    const SimpleMath::Vector3 DEFAULT_RIGHT_VECTOR = SimpleMath::Vector3(-1.0f, 0.0f, 0.0f);
-
-    float RadiansToDegrees = 180.0f / XM_PI;
-    float DegreesToRadians = XM_PI / 180.0f;
-
-    float Radians(const float degrees) const { return degrees * DegreesToRadians; }
-    float Degrees(const float radians) const { return radians * RadiansToDegrees; }
 
 private:
     SimpleMath::Matrix worldMatrix = SimpleMath::Matrix::Identity;
+    SimpleMath::Matrix parentWorldMatrix = SimpleMath::Matrix::Identity;
 
     SimpleMath::Vector3 scale = SimpleMath::Vector3::One;
     SimpleMath::Vector3 position = SimpleMath::Vector3::Zero;

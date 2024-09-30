@@ -2,7 +2,7 @@
 
 static ModelBuffer modelBuffer;
 
-Model::Model(Object& parent, const Microsoft::WRL::ComPtr<ID3D11Device>& device,
+Model::Model(GameObject& parent, const Microsoft::WRL::ComPtr<ID3D11Device>& device,
              const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext,
              ConstantBuffer<CB_VS_VertexShader>& cb_vs_vertexshader, ConstantBuffer<CB_PS_PixelShader>& cb_ps_pixelshader) :
         Component(parent, "Model"),
@@ -23,6 +23,10 @@ void Model::Start()
 }
 
 void Model::Update()
+{
+}
+
+void Model::Destroy()
 {
 }
 

@@ -1,9 +1,6 @@
 ﻿#pragma once
 
 #include "Engine/Core/GameEngine.h"
-#include "Engine/Components/Model.h"
-#include "Engine/Components/ColliderComponent.h"
-
 
 class PongApp : public GameEngine{
 public:
@@ -11,7 +8,7 @@ public:
                     int height) override;
     void Update() override;
     void RenderGui() override;
-    void AddComponentToObject(Object* obj, const std::string& component_name);
+    void AddComponentToObject(GameObject* obj, const std::string& component_name);
     bool InitializeScene() override;
 
 private:

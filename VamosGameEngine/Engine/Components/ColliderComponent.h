@@ -1,12 +1,13 @@
 ﻿#pragma once
 
 #include "Component.h"
-#include <Engine/Physics/PhysicsEngine.h>
-#include "Engine/Core/Object.h"
+#include "Delegate.h"
+#include "SimpleMath.h"
+#include "Engine/Physics/PhysicsEngine.h"
 
 class ColliderComponent : public Component {
 public:
-    ColliderComponent(Object& parent, JPH::PhysicsSystem* physicsSystem,
+    ColliderComponent(GameObject& parent, JPH::PhysicsSystem* physicsSystem,
         JPH::EMotionType motionType, JPH::ObjectLayer layer);
     ~ColliderComponent();
 
@@ -17,17 +18,25 @@ public:
 
     void SetShape(JPH::Shape* shape);
     void SetShape(const std::string& newShape);
-    [[nodiscard]] SimpleMath::Vector3 GetScale() const;
-    void SetScale(const SimpleMath::Vector3& scale);
+    [[nodiscard]] DirectX::SimpleMath::Vector3 GetScale() const;
+    void SetScale(const DirectX::SimpleMath::Vector3& scale);
     void SetScale(float radius);
     [[nodiscard]] JPH::Body* GetBody() const;
-    [[nodiscard]] SimpleMath::Vector3 GetPosition() const;
-    [[nodiscard]] SimpleMath::Quaternion GetRotation() const;
-    [[nodiscard]] SimpleMath::Vector3 GetPositionOffset() const;
-    [[nodiscard]] SimpleMath::Quaternion GetRotationOffset() const;
-    void SetPositionAndRotation(const SimpleMath::Vector3& position, const SimpleMath::Quaternion& rotation) const;
+    [[nodiscard]] DirectX::SimpleMath::Vector3 GetPosition() const;
+    [[nodiscard]] DirectX::SimpleMath::Quaternion GetRotation() const;
+    [[nodiscard]] DirectX::SimpleMath::Vector3 GetPositionOffset() const;
+    [[nodiscard]] DirectX::SimpleMath::Quaternion GetRotationOffset() const;
+    void SetPositionAndRotation(const DirectX::SimpleMath::Vector3& position, const DirectX::SimpleMath::Quaternion& rotation) const;
+    void SetPosition(const DirectX::SimpleMath::Vector3& position) const;
+    void SetRotation(const DirectX::SimpleMath::Quaternion& rotation) const;
+
+    Delegate<void, ColliderComponent*>& OnCollision() { return onCollision_; }
+    void Destroy() override;
 
 private:
+
+    Delegate<void, ColliderComponent*> onCollision_;
+
     JPH::Body* mBody;
     JPH::Shape* mShape;
     JPH::BodyCreationSettings mSettings;

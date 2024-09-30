@@ -1,19 +1,21 @@
 #pragma once
 
-#include "ImGUI/imgui.h"
+#include <ImGUI/imgui.h>
+
 #include "Component.h"
-#include "../Rendering/Mesh.h"
+#include "Engine/Rendering/Mesh.h"
 #include "ModelBuffer.h"
 
 class Model : public Component
 {
 public:
-    explicit Model(Object& parent, const Microsoft::WRL::ComPtr<ID3D11Device>& device, const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext,
+    explicit Model(GameObject& parent, const Microsoft::WRL::ComPtr<ID3D11Device>& device, const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext,
                     ConstantBuffer<CB_VS_VertexShader>& cb_vs_vertexshader, ConstantBuffer<CB_PS_PixelShader>& cb_ps_pixelshader);
     ~Model() override;
 
     void Start() override;
     void Update() override;
+    void Destroy() override;
     void RenderGUI() override;
     void Draw(const DirectX::SimpleMath::Matrix& worldMatrix, const DirectX::SimpleMath::Matrix& viewProjectionMatrix);
 
@@ -36,10 +38,12 @@ private:
     std::string filePath = "";
 
     bool LoadModel();
+
     void ProcessNode(aiNode* node, const aiScene* Scene);
     Mesh ProcessMesh(aiMesh* mesh, const aiScene* Scene);
     std::vector<Texture> LoadMaterialTextures(aiMaterial* pMaterial, aiTextureType textureType, const aiScene* pScene);
     TextureStorageType DetermineTextureStorageType(const aiScene* pScene, aiMaterial* pMat, unsigned int index,
                                                    aiTextureType textureType);
     int GetTextureIndex(aiString* pStr);
+
 };

@@ -2,7 +2,6 @@
 #include "SimpleMath.h"
 #include "Engine/Components/Transform.h"
 #include "Engine/Core/GameObject.h"
-#include "Engine/Core/Object.h"
 
 using namespace DirectX;
 

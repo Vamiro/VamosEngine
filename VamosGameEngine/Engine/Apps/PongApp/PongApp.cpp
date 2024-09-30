@@ -1,5 +1,9 @@
 ﻿#include "PongApp.h"
 
+#include "Engine/Components/BallComponent.h"
+#include "Engine/Components/FollowCamera.h"
+#include "Engine/Components/ColliderComponent.h"
+
 bool PongApp::Start(HINSTANCE hInstance, std::string window_title, std::string window_class, int width, int height)
 {
     GameEngine::Start(hInstance, window_title, window_class, width, height);
@@ -22,27 +26,19 @@ bool PongApp::Start(HINSTANCE hInstance, std::string window_title, std::string w
         {
             ball->GetComponent<Model>()->SetModelPath("Data\\Objects\\sphere.obj");
         }
-        if (args == InputKey::D3)
-        {
-            physicsEngine->GetPhysicsSystem()->GetBodyInterface().AddImpulse(
-                ball->GetComponent<ColliderComponent>()->GetBody()->GetID(),
-                JPH::Vec3Arg(0.0f, 10.0f, 0.0f));
-            JPH::Vec3 velocity = physicsEngine->GetPhysicsSystem()->GetBodyInterface().GetLinearVelocity(
-                ball->GetComponent<ColliderComponent>()->GetBody()->GetID());
-            std::cout << "Velocity: " << velocity.GetX() << " " << velocity.GetY() << " " << velocity.GetZ() << std::endl;
 
-            JPH::RVec3 position = physicsEngine->GetPhysicsSystem()->GetBodyInterface().GetCenterOfMassPosition(
-                ball->GetComponent<ColliderComponent>()->GetBody()->GetID());
-            std::cout << "Position: " << position.GetX() << " " << position.GetY() << " " << position.GetZ() << std::endl;
-        }
     };
 
     input_device_.OnMouseMove().AddLambda([&](const InputDevice::MouseMoveEventArgs& args) {
          if(input_device_.IsKeyDown(InputKey::RightButton))
-             currentCamera->transform->AdjustRotation(
-                    -args.Offset.x * input_device_.MouseSensitivity,
-                    args.Offset.y * input_device_.MouseSensitivity,
-                    0.0f);
+         {
+             auto rot = SimpleMath::Quaternion::CreateFromYawPitchRoll(XMConvertToRadians(-args.Offset.x * input_device_.MouseSensitivity), 0, 0);
+
+             currentCamera->transform->RotateAround(
+                 ball->transform->GetPositionVector(),
+                 rot);
+            //std::cout << std::format("Rotation: ({:.2f}, {:.2f}, {:.2f})", rot.x, rot.y, rot.z) << std::endl;
+         }
      });
 
     return true;
@@ -64,30 +60,37 @@ void PongApp::Update()
 
     float cameraSpeed = 0.01f;
 
+    JPH::Vec3 velocity(0.0f, 0.0f, 0.0f);
+    auto forward = currentCamera->transform->GetForwardVector();
+    forward.Normalize();
+    forward /= 2.0f;
+
     if (input_device_.IsKeyDown(InputKey::W))
     {
-       currentCamera->transform->AdjustPosition(currentCamera->transform->GetForwardVector() * cameraSpeed * deltaTime);
+        velocity += JPH::Vec3(forward.x, 0.0f, forward.z);
     }
     if (input_device_.IsKeyDown(InputKey::S))
     {
-        currentCamera->transform->AdjustPosition(currentCamera->transform->GetBackwardVector() * cameraSpeed * deltaTime);
+        velocity -= JPH::Vec3(forward.x, 0.0f, forward.z);
     }
+
+    auto right = currentCamera->transform->GetRightVector();
+    right.Normalize();
+    right /= 4.0f;
+
     if (input_device_.IsKeyDown(InputKey::A))
     {
-        currentCamera->transform->AdjustPosition(currentCamera->transform->GetLeftVector() * cameraSpeed * deltaTime);
+        velocity += JPH::Vec3(right.x, 0.0f, right.z);
     }
     if (input_device_.IsKeyDown(InputKey::D))
     {
-        currentCamera->transform->AdjustPosition(currentCamera->transform->GetRightVector() * cameraSpeed * deltaTime);
+        velocity -= JPH::Vec3(right.x, 0.0f, right.z);
     }
-    if (input_device_.IsKeyDown(InputKey::Q))
-    {
-        currentCamera->transform->AdjustPosition(currentCamera->transform->GetUpVector() * cameraSpeed * deltaTime);
-    }
-    if (input_device_.IsKeyDown(InputKey::E))
-    {
-        currentCamera->transform->AdjustPosition(currentCamera->transform->GetDownVector() * cameraSpeed * deltaTime);
-    }
+
+    physicsEngine->GetPhysicsSystem()->GetBodyInterface().SetLinearVelocity(
+    ball->GetComponent<ColliderComponent>()->GetBody()->GetID(),
+    {velocity.GetX(), ball->GetComponent<ColliderComponent>()->GetBody()->GetLinearVelocity().GetY(), velocity.GetZ()});
+
 
     currentCamera->UpdateViewMatrix();
 }
@@ -100,14 +103,17 @@ void PongApp::RenderGui()
 
     ImGui::Begin("GUI");
     ImGui::Text("FPS: %.2f", ImGui::GetIO().Framerate);
+    auto forward_vector = currentCamera->transform->GetForwardVector();
+    forward_vector.Normalize();
+    ImGui::Text("FPS: (%.2f, %.2f, %.2f)", forward_vector.x, forward_vector.y, forward_vector.z);
 
     auto gameObject_getter = [](void* data, int index, const char** output) -> bool
     {
-        auto* gameObjects = static_cast<std::vector<Object*>*>(data);
+        auto* gameObjects = static_cast<std::vector<GameObject*>*>(data);
         if (index < 0 || index >= static_cast<int>(gameObjects->size()))
             return false;
 
-        Object* current_gameObject = (*gameObjects)[index];
+        GameObject* current_gameObject = (*gameObjects)[index];
         if (!current_gameObject)
             return false;
 
@@ -157,7 +163,7 @@ void PongApp::RenderGui()
         //     currentScene.objects.clear();
         //     for (auto* gameObject : gameObjects)
         //     {
-        //         currentScene.objects.push_back(*gameObject);
+        //         currentScene.objects.push_back(gameObject);
         //     }
         //     SaveScene(R"(Engine\Data\Scenes\scene.json)", currentScene);
         // }
@@ -168,8 +174,8 @@ void PongApp::RenderGui()
         //     gameObjects.clear();
         //     for (auto& gameObject : currentScene.objects)
         //     {
-        //         gameObjects.push_back(&gameObject);
-        //         gameObject.Start();
+        //         gameObjects.push_back(gameObject);
+        //         gameObject->Start();
         //     }
         // }
 
@@ -188,7 +194,7 @@ void PongApp::RenderGui()
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
 
-void PongApp::AddComponentToObject(Object* obj, const std::string& component_name)
+void PongApp::AddComponentToObject(GameObject* obj, const std::string& component_name)
 {
     // Логика для добавления различных компонентов в зависимости от выбранного элемента
     if (component_name == "Model")
@@ -213,7 +219,7 @@ bool PongApp::InitializeScene()
         hr = cb_ps_pixelshader.Initialize(d3d_device.Get(), d3d_device_context.Get());
         ErrorLogger::Log(hr, "Failed to create pixelshader constant buffer.");
 
-        ball = gameObjects.emplace_back(new GameObject("Obj2"));
+        ball = gameObjects.emplace_back(new GameObject("Ball"));
         ball->transform->SetPosition(SimpleMath::Vector3(0.0f, 5.0f, 0.0f));
         ball->AddComponent(new Model(*ball, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
         ball->GetComponent<Model>()->SetModelPath("Data\\Objects\\sphere.obj");
@@ -221,22 +227,62 @@ bool PongApp::InitializeScene()
         auto* c = new ColliderComponent(*ball, physicsEngine->GetPhysicsSystem(), JPH::EMotionType::Dynamic, Layers::MOVING);
         c->SetShape(new JPH::SphereShape(1.0f));
         ball->AddComponent(c);
+        ball->AddComponent(new BallComponent(*ball));
+
+
+        auto* boo = gameObjects.emplace_back(new GameObject("Obj3"));
+        boo->AddComponent(new Model(*boo, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
+        boo->GetComponent<Model>()->SetModelPath("Data\\Objects\\sphere.obj");
+        boo->GetComponent<Model>()->SetColor({0.0f, 1.0f, 0.0f, 1.0f});
+        c = new ColliderComponent(*boo, physicsEngine->GetPhysicsSystem(), JPH::EMotionType::Dynamic, Layers::MOVING);
+        c->SetShape(new JPH::SphereShape(1.0f));
+        boo->AddComponent(c);
+        boo->transform->SetPosition(SimpleMath::Vector3(0.0f, 0.0f, 5.0f));
+
+        boo = gameObjects.emplace_back(new GameObject("Obj4"));
+        boo->AddComponent(new Model(*boo, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
+        boo->GetComponent<Model>()->SetModelPath("Data\\Objects\\sphere.obj");
+        boo->GetComponent<Model>()->SetColor({0.0f, 1.0f, 0.0f, 1.0f});
+        c = new ColliderComponent(*boo, physicsEngine->GetPhysicsSystem(), JPH::EMotionType::Dynamic, Layers::MOVING);
+        c->SetShape(new JPH::SphereShape(1.0f));
+        boo->AddComponent(c);
+        boo->transform->SetPosition(SimpleMath::Vector3(0.0f, 5.0f, -5.0f));
+
+        boo = gameObjects.emplace_back(new GameObject("Obj5"));
+        boo->AddComponent(new Model(*boo, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
+        boo->GetComponent<Model>()->SetModelPath("Data\\Objects\\sphere.obj");
+        boo->GetComponent<Model>()->SetColor({0.0f, 1.0f, 0.0f, 1.0f});
+        c = new ColliderComponent(*boo, physicsEngine->GetPhysicsSystem(), JPH::EMotionType::Dynamic, Layers::MOVING);
+        c->SetShape(new JPH::SphereShape(1.0f));
+        boo->AddComponent(c);
+        boo->transform->SetPosition(SimpleMath::Vector3(5.0f, 5.0f, 0.0f));
+
+        boo = gameObjects.emplace_back(new GameObject("Obj6"));
+        boo->AddComponent(new Model(*boo, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
+        boo->GetComponent<Model>()->SetModelPath("Data\\Objects\\sphere.obj");
+        boo->GetComponent<Model>()->SetColor({0.0f, 1.0f, 0.0f, 1.0f});
+        c = new ColliderComponent(*boo, physicsEngine->GetPhysicsSystem(), JPH::EMotionType::Dynamic, Layers::MOVING);
+        c->SetShape(new JPH::SphereShape(1.0f));
+        boo->AddComponent(c);
+        boo->transform->SetPosition(SimpleMath::Vector3(-5.0f, 5.0f, 0.0f));
 
         floor = gameObjects.emplace_back(new GameObject("Obj2"));
         floor->AddComponent(new Model(*floor, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
         floor->GetComponent<Model>()->SetModelPath("Data\\Objects\\box.obj");
+        floor->transform->SetScale({10.0f, 1.0f, 10.0f});
         c = new ColliderComponent(*floor, physicsEngine->GetPhysicsSystem(), JPH::EMotionType::Static, Layers::NON_MOVING);
-        c->SetShape(new JPH::BoxShape(JPH::Vec3(10.0f, 1.0f, 10.0f)));
+        c->SetShape(new JPH::BoxShape(JPH::Vec3(200.0f, 1.0f, 200.0f)));
         floor->AddComponent(c);
 
         auto* camera = new Camera();
 
-        camera->transform->SetPosition(SimpleMath::Vector3(0.0f, 10.0f, -20.0f));
-        camera->transform->SetEulerRotate(SimpleMath::Vector3(0.0f, 10.0f, 0.0f));
+        camera->transform->SetPosition(SimpleMath::Vector3(0.0f, 10.0f, -10.0f));
+        camera->transform->SetEulerRotate(SimpleMath::Vector3(0.0f, 45.0f, 0.0f));
 
         camera->SetProjectionValues(90.0f, static_cast<float>(gfx_.GetWindowWidth()) / static_cast<float>(gfx_.GetWindowHeight()), 0.1f,
                                    1000.0f, PERSPECTIVE);
 
+        camera->AddComponent(new FollowCamera(*camera, *ball));
         gameObjects.emplace_back(camera);
         SetCurrentCamera(camera);
     }

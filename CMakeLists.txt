@@ -36,8 +36,6 @@ add_executable(VamosGameEngine WIN32
         VamosGameEngine/Engine/Graphics/VertexBuffer.h
         VamosGameEngine/Engine/Rendering/Camera.cpp
         VamosGameEngine/Engine/Rendering/Camera.h
-        VamosGameEngine/Engine/Core/Object.cpp
-        VamosGameEngine/Engine/Core/Object.h
         VamosGameEngine/Engine/Rendering/Mesh.cpp
         VamosGameEngine/Engine/Rendering/Mesh.h
         VamosGameEngine/Engine/Components/Model.cpp
@@ -91,7 +89,9 @@ add_executable(VamosGameEngine WIN32
         VamosGameEngine/Engine/Components/ColliderComponent.cpp
         VamosGameEngine/Engine/Components/ColliderComponent.h
         VamosGameEngine/Engine/Utilities/JsonUtil.h
-        VamosGameEngine/Engine/Core/Scene.h
+        VamosGameEngine/Engine/Components/FollowCamera.h
+        VamosGameEngine/Engine/Components/FollowCamera.cpp
+        VamosGameEngine/Engine/Components/BallComponent.h
 )
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
