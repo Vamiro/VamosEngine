@@ -82,6 +82,14 @@ void Transform::UpdateWorldMatrix()
     this->vec_down = SimpleMath::Vector3::Transform(DEFAULT_DOWN_VECTOR, rotationMatrix * parentWorldMatrix);
 }
 
+void Transform::SetLocalMatrix(SimpleMath::Matrix& matrix)
+{
+    this->localMatrix = matrix;
+    matrix.Decompose(scale, rotation, position);
+    this->hasChanges = true;
+    this->UpdateWorldMatrix();
+}
+
 const SimpleMath::Vector3& Transform::GetPositionVector() const
 {
     return this->position;

@@ -62,8 +62,17 @@ void GameObject::Destroy()
 
 void GameObject::SetParent(GameObject* parent)
 {
-    auto rotatedPosition = SimpleMath::Vector3::Transform(transform->GetPositionVector() - parent->transform->GetPositionVector(), parent->transform->GetRotationQuaternion());
-    transform->SetPosition(rotatedPosition);
+    if (parent == nullptr)
+    {
+        return;
+    }
+
+    auto parentWorldMatrix = parent->transform->GetWorldMatrix();
+    auto currentWorldMatrix = transform->GetWorldMatrix();
+    auto localMatrix = currentWorldMatrix * parentWorldMatrix.Invert();
+
+    transform->SetLocalMatrix(localMatrix);
     _parent = parent;
     _parent->AddChild(this);
+
 }

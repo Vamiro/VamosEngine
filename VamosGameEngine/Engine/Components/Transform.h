@@ -47,6 +47,8 @@ public:
 
     void SetParentWorldMatrix(const SimpleMath::Matrix& parentWorldMatrix);
     void UpdateWorldMatrix();
+    void SetLocalMatrix(SimpleMath::Matrix& matrix);
+    [[nodiscard]] SimpleMath::Matrix GetLocalMatrix() const { return localMatrix; }
     [[nodiscard]] SimpleMath::Matrix GetWorldMatrix() const { return worldMatrix; }
 
 
@@ -59,6 +61,7 @@ public:
 
 private:
     SimpleMath::Matrix worldMatrix = SimpleMath::Matrix::Identity;
+    SimpleMath::Matrix localMatrix = SimpleMath::Matrix::Identity;
     SimpleMath::Matrix parentWorldMatrix = SimpleMath::Matrix::Identity;
 
     SimpleMath::Vector3 scale = SimpleMath::Vector3::One;
