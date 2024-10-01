@@ -8,7 +8,8 @@
 class ColliderComponent : public Component {
 public:
     ColliderComponent(GameObject& parent, JPH::PhysicsSystem* physicsSystem,
-        JPH::EMotionType motionType, JPH::ObjectLayer layer);
+    JPH::EMotionType motionType, JPH::ObjectLayer layer, bool allowSleeping = true,
+                                 bool isTrigger = false);
     ~ColliderComponent();
 
     void Start() override;
@@ -47,4 +48,6 @@ private:
     JPH::Vec3 mScale = JPH::Vec3::sReplicate(1.0f);
     JPH::EMotionType mMotionType;
     JPH::ObjectLayer mLayer;
+    bool mAllowSleeping;
+    bool mIsTrigger;
 };

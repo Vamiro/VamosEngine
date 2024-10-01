@@ -60,10 +60,12 @@ void PongApp::Update()
 
     float cameraSpeed = 0.01f;
 
+    float ballSpeed = 1.0f;
+
     JPH::Vec3 velocity(0.0f, 0.0f, 0.0f);
     auto forward = currentCamera->transform->GetForwardVector();
     forward.Normalize();
-    forward /= 2.0f;
+    forward *= ballSpeed;
 
     if (input_device_.IsKeyDown(InputKey::W))
     {
@@ -76,7 +78,7 @@ void PongApp::Update()
 
     auto right = currentCamera->transform->GetRightVector();
     right.Normalize();
-    right /= 4.0f;
+    right *= ballSpeed / 2.0f;
 
     if (input_device_.IsKeyDown(InputKey::A))
     {
@@ -87,9 +89,21 @@ void PongApp::Update()
         velocity -= JPH::Vec3(right.x, 0.0f, right.z);
     }
 
-    physicsEngine->GetPhysicsSystem()->GetBodyInterface().SetLinearVelocity(
-    ball->GetComponent<ColliderComponent>()->GetBody()->GetID(),
-    {velocity.GetX(), ball->GetComponent<ColliderComponent>()->GetBody()->GetLinearVelocity().GetY(), velocity.GetZ()});
+    if (input_device_.IsKeyDown(InputKey::Space))
+    {
+        velocity += JPH::Vec3(0.0f, 0.001f, 0.0f);
+    }
+
+    if(velocity != JPH::Vec3(0.0f, 0.0f, 0.0f))
+    {
+        //velocity *= 1000.0f;
+        ball->GetComponent<ColliderComponent>()->GetBody()->SetLinearVelocity(
+        {
+            velocity.GetX(),
+            ball->GetComponent<ColliderComponent>()->GetBody()->GetLinearVelocity().GetY() + velocity.GetY(),
+            velocity.GetZ()
+        });
+    }
 
 
     currentCamera->UpdateViewMatrix();
@@ -224,52 +238,39 @@ bool PongApp::InitializeScene()
         ball->AddComponent(new Model(*ball, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
         ball->GetComponent<Model>()->SetModelPath("Data\\Objects\\sphere.obj");
         ball->GetComponent<Model>()->SetColor({0.0f, 0.0f, 1.0f, 1.0f});
-        auto* c = new ColliderComponent(*ball, physicsEngine->GetPhysicsSystem(), JPH::EMotionType::Dynamic, Layers::MOVING);
+        auto* c = new ColliderComponent(*ball, physicsEngine->GetPhysicsSystem(), JPH::EMotionType::Dynamic, Layers::MOVING, false);
         c->SetShape(new JPH::SphereShape(1.0f));
         ball->AddComponent(c);
         ball->AddComponent(new BallComponent(*ball));
 
 
-        auto* boo = gameObjects.emplace_back(new GameObject("Obj3"));
-        boo->AddComponent(new Model(*boo, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
-        boo->GetComponent<Model>()->SetModelPath("Data\\Objects\\sphere.obj");
-        boo->GetComponent<Model>()->SetColor({0.0f, 1.0f, 0.0f, 1.0f});
-        c = new ColliderComponent(*boo, physicsEngine->GetPhysicsSystem(), JPH::EMotionType::Dynamic, Layers::MOVING);
-        c->SetShape(new JPH::SphereShape(1.0f));
-        boo->AddComponent(c);
-        boo->transform->SetPosition(SimpleMath::Vector3(0.0f, 0.0f, 5.0f));
+        for (auto i = -5; i <= 5; ++i)
+        {
+            for (auto j = -5; j <= 5; ++j)
+            {
+                auto* boo = gameObjects.emplace_back(new GameObject("Obj" + std::to_string(i) + std::to_string(j)));
+                boo->transform->SetPosition(SimpleMath::Vector3(static_cast<float>(i) * 4.0f + 5, 2.0f, static_cast<float>(j) * 4.0f));
 
-        boo = gameObjects.emplace_back(new GameObject("Obj4"));
-        boo->AddComponent(new Model(*boo, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
-        boo->GetComponent<Model>()->SetModelPath("Data\\Objects\\sphere.obj");
-        boo->GetComponent<Model>()->SetColor({0.0f, 1.0f, 0.0f, 1.0f});
-        c = new ColliderComponent(*boo, physicsEngine->GetPhysicsSystem(), JPH::EMotionType::Dynamic, Layers::MOVING);
-        c->SetShape(new JPH::SphereShape(1.0f));
-        boo->AddComponent(c);
-        boo->transform->SetPosition(SimpleMath::Vector3(0.0f, 5.0f, -5.0f));
+                boo->AddComponent(new Model(*boo, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
+                boo->GetComponent<Model>()->SetModelPath("Data\\Objects\\sphere.obj");
 
-        boo = gameObjects.emplace_back(new GameObject("Obj5"));
-        boo->AddComponent(new Model(*boo, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
-        boo->GetComponent<Model>()->SetModelPath("Data\\Objects\\sphere.obj");
-        boo->GetComponent<Model>()->SetColor({0.0f, 1.0f, 0.0f, 1.0f});
-        c = new ColliderComponent(*boo, physicsEngine->GetPhysicsSystem(), JPH::EMotionType::Dynamic, Layers::MOVING);
-        c->SetShape(new JPH::SphereShape(1.0f));
-        boo->AddComponent(c);
-        boo->transform->SetPosition(SimpleMath::Vector3(5.0f, 5.0f, 0.0f));
+                // Calculate color based on iterator and grid position
+                float r = static_cast<float>(i + 5) / 10.0f;
+                float g = static_cast<float>(j + 5) / 10.0f;
+                float b = 1.0f - r;
+                boo->GetComponent<Model>()->SetColor({r, g, b, 1.0f});
 
-        boo = gameObjects.emplace_back(new GameObject("Obj6"));
-        boo->AddComponent(new Model(*boo, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
-        boo->GetComponent<Model>()->SetModelPath("Data\\Objects\\sphere.obj");
-        boo->GetComponent<Model>()->SetColor({0.0f, 1.0f, 0.0f, 1.0f});
-        c = new ColliderComponent(*boo, physicsEngine->GetPhysicsSystem(), JPH::EMotionType::Dynamic, Layers::MOVING);
-        c->SetShape(new JPH::SphereShape(1.0f));
-        boo->AddComponent(c);
-        boo->transform->SetPosition(SimpleMath::Vector3(-5.0f, 5.0f, 0.0f));
+                c = new ColliderComponent(*boo, physicsEngine->GetPhysicsSystem(), JPH::EMotionType::Static, Layers::NON_MOVING, true, true);
+                c->SetShape(new JPH::SphereShape(1.0f));
+                boo->AddComponent(c);
+            }
+        }
 
-        floor = gameObjects.emplace_back(new GameObject("Obj2"));
+
+        floor = gameObjects.emplace_back(new GameObject("Floor"));
         floor->AddComponent(new Model(*floor, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
         floor->GetComponent<Model>()->SetModelPath("Data\\Objects\\box.obj");
-        floor->transform->SetScale({10.0f, 1.0f, 10.0f});
+        floor->transform->SetScale({100.0f, 1.0f, 100.0f});
         c = new ColliderComponent(*floor, physicsEngine->GetPhysicsSystem(), JPH::EMotionType::Static, Layers::NON_MOVING);
         c->SetShape(new JPH::BoxShape(JPH::Vec3(200.0f, 1.0f, 200.0f)));
         floor->AddComponent(c);

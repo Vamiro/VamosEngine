@@ -20,7 +20,7 @@ void FollowCamera::Start()
 void FollowCamera::Update()
 {
     auto pos = target->transform->GetPositionVector();
-    parent->transform->KeepDistance(SimpleMath::Vector3(pos.x, 10.0f, pos.z), 10.0f);
+    parent->transform->KeepDistance(SimpleMath::Vector3(pos.x, 30.0f, pos.z), 30.0f);
     parent->transform->SetLookAtPos(target->transform->GetPositionVector());
 }
 

@@ -4,13 +4,16 @@
 #include "Engine/Core/GameObject.h"
 
 ColliderComponent::ColliderComponent(GameObject& parent, JPH::PhysicsSystem* physicsSystem,
-                                     JPH::EMotionType motionType,  JPH::ObjectLayer layer):
+                                     JPH::EMotionType motionType,  JPH::ObjectLayer layer, bool allowSleeping,
+                                     bool isTrigger):
         Component(parent, "ColliderComponent"),
         mBody(nullptr),
         mShape(nullptr),
         mPhysicsSystem(physicsSystem),
         mMotionType(motionType),
-        mLayer(layer)
+        mLayer(layer),
+        mAllowSleeping(allowSleeping),
+        mIsTrigger(isTrigger)
 {}
 
 ColliderComponent::~ColliderComponent() {
@@ -20,7 +23,9 @@ ColliderComponent::~ColliderComponent() {
 void ColliderComponent::Start() {
     if (mShape) {
         mSettings = JPH::BodyCreationSettings(mShape->ScaleShape(mScale).Get(), JPH::RVec3::sZero(), JPH::Quat::sIdentity(), mMotionType, mLayer);
-        mSettings.mAllowSleeping = false;
+        mSettings.mAllowSleeping = mAllowSleeping;
+        mSettings.mIsSensor = mIsTrigger;
+        mSettings.mFriction = 10.0f;
         JPH::BodyInterface& bodyInterface = mPhysicsSystem->GetBodyInterface();
         mBody = bodyInterface.CreateBody(mSettings);
         bodyInterface.AddBody(mBody->GetID(), JPH::EActivation::DontActivate);
@@ -154,5 +159,8 @@ void ColliderComponent::SetRotation(const SimpleMath::Quaternion& rotation) cons
 
 void ColliderComponent::Destroy()
 {
+    mBody->SetUserData(JPH::uint64());
+    //mBody->SetMotionType(JPH::EMotionType::Static);
+    mShape->Release();
     mBody = nullptr;
 }
