@@ -17,7 +17,7 @@ public:
     void Update() override;
     void Destroy() override;
     void RenderGUI() override;
-    void Draw(const DirectX::SimpleMath::Matrix& worldMatrix, const DirectX::SimpleMath::Matrix& viewProjectionMatrix);
+    void Draw(const DirectX::SimpleMath::Matrix& worldMatrix, const DirectX::SimpleMath::Matrix& viewMatrix, const DirectX::SimpleMath::Matrix& projectionMatrix);
 
     void SetModelPath(const std::string& filePath);
     [[nodiscard]] std::string GetModelPath() const { return filePath; }

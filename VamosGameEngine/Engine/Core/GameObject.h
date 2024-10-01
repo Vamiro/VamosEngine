@@ -24,7 +24,7 @@ public:
 
     virtual void Start();
     virtual void Update(float deltaTime);
-    void Render(const SimpleMath::Matrix& viewProjectionMatrix);
+    void Render(const DirectX::SimpleMath::Matrix& viewMatrix, const DirectX::SimpleMath::Matrix& projectionMatrix);
     virtual void Destroy();
 
     [[nodiscard]] bool IsVisible() const { return _isVisible; }

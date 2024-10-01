@@ -117,9 +117,6 @@ void PongApp::RenderGui()
 
     ImGui::Begin("GUI");
     ImGui::Text("FPS: %.2f", ImGui::GetIO().Framerate);
-    auto forward_vector = currentCamera->transform->GetForwardVector();
-    forward_vector.Normalize();
-    ImGui::Text("FPS: (%.2f, %.2f, %.2f)", forward_vector.x, forward_vector.y, forward_vector.z);
 
     auto gameObject_getter = [](void* data, int index, const char** output) -> bool
     {

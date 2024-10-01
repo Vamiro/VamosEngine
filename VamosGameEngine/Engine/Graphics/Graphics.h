@@ -26,6 +26,9 @@ public:
     Microsoft::WRL::ComPtr<IDXGISwapChain> GetSwapChain() { return swapChain; }
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView> GetRenderTargetView() { return renderTargetView; }
     Microsoft::WRL::ComPtr<ID3D11DepthStencilView> GetDepthStencilView() { return depthStencilView; }
+    Microsoft::WRL::ComPtr<ID3D11RasterizerState> GetRasterizerState() { return rasterizerState; }
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilState> GetDepthStencilState() { return depthStencilState; }
+    Microsoft::WRL::ComPtr<ID3D11SamplerState> GetSamplerState() { return samplerState; }
     int GetWindowHeight() const { return windowHeight; }
     int GetWindowWidth() const { return windowWidth; }
 

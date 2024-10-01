@@ -30,11 +30,11 @@ void Model::Destroy()
 {
 }
 
-void Model::Draw(const DirectX::SimpleMath::Matrix& worldMatrix, const DirectX::SimpleMath::Matrix& viewProjectionMatrix)
+void Model::Draw(const DirectX::SimpleMath::Matrix& worldMatrix, const DirectX::SimpleMath::Matrix& viewMatrix, const DirectX::SimpleMath::Matrix& projectionMatrix)
 {
     //Update Constant buffer with WVP Matrix
-    this->cb_vs_vertexshader->data.mat = worldMatrix * viewProjectionMatrix; //Calculate World-View-Projection Matrix
-    this->cb_vs_vertexshader->data.mat = XMMatrixTranspose(this->cb_vs_vertexshader->data.mat);
+    this->cb_vs_vertexshader->data.worldViewProj = (worldMatrix * viewMatrix * projectionMatrix).Transpose();
+    this->cb_vs_vertexshader->data.inverseWorld = worldMatrix.Invert().Transpose();
     this->cb_vs_vertexshader->ApplyChanges(0);
     this->deviceContext->VSSetConstantBuffers(0, 1, this->cb_vs_vertexshader->GetAddressOf());
 

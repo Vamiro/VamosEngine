@@ -51,7 +51,7 @@ inline void BallComponent::Update()
         items = parent->GetChildren().size();
         auto size = items / 50.0f + 1.0f;
         colliderComponent->SetScale(size);
-        parent->transform->SetScale({size,size,size});
+        //parent->transform->SetScale({size,size,size});
     }
 }
 

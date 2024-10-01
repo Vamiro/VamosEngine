@@ -27,7 +27,7 @@ GameObject::GameObject(const std::string& name, bool visible): name(name), _isVi
     _components.push_back(transform);
 }
 
-void GameObject::Render(const SimpleMath::Matrix& viewProjectionMatrix)
+void GameObject::Render(const DirectX::SimpleMath::Matrix& viewMatrix, const DirectX::SimpleMath::Matrix& projectionMatrix)
 {
     for (auto child : _children)
     {
@@ -36,7 +36,7 @@ void GameObject::Render(const SimpleMath::Matrix& viewProjectionMatrix)
     Model* mModel = GetComponent<Model>();
     if(mModel != nullptr)
     {
-        mModel->Draw(this->transform->GetWorldMatrix(), viewProjectionMatrix);
+        mModel->Draw(this->transform->GetWorldMatrix(), viewMatrix, projectionMatrix);
     }
 
 }
