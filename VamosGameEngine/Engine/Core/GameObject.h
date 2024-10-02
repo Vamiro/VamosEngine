@@ -39,6 +39,7 @@ public:
     void AddComponent(Component* component){ _components.push_back(component); }
     void DeleteComponent(Component* component)
     {
+        component->Destroy();
         std::erase(_components, component);
     }
     [[nodiscard]] std::vector<Component*> GetComponents() const { return _components; }

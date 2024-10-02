@@ -19,7 +19,7 @@ struct Scene {
 
 class GameEngine : public Engine {
 public:
-    GameEngine() = default;
+    GameEngine();
     ~GameEngine() override;
     bool Start(HINSTANCE hInstance, std::string window_title, std::string window_class, int width, int height) override;
     bool ProcessMessages() override;
@@ -44,5 +44,6 @@ protected:
     int currentGameObj = 0;
 
     PhysicsEngine* physicsEngine;
+    JPH::BodyInterface* _bodyInterface;
     void InitializePhysics();
 };

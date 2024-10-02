@@ -16,9 +16,7 @@ class Graphics
 public:
     Graphics(Engine* engine) : _engine(engine) {};
     bool Initialize(HWND hwnd, int width, int height);
-    void RenderFrame();
-    void SetLookAt(float x, float y, float z);
-    void UnSetLookAt();
+    void RenderFrame() const;
     bool blockInputForImGui = false;
     ShaderManager* shaderManager;
     Microsoft::WRL::ComPtr<ID3D11Device> GetDevice() { return device; }
@@ -38,9 +36,9 @@ public:
 private:
     Engine* _engine = nullptr;
     Timer fpsTimer;
-    bool lookAt = false;
     bool InitializeDirectX(HWND hwnd);
-    bool InitializeShaders();
+    bool InitializeShaders() const;
+    bool InitializeGUI(HWND hwnd) const;
     int windowWidth = 0;
     int windowHeight = 0;
     Microsoft::WRL::ComPtr<ID3D11Device> device;

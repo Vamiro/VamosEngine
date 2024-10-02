@@ -179,7 +179,11 @@ void PhysicsEngine::Initialize(float gravityScale)
     JPH::RegisterTypes();
 
     temp_allocator = new JPH::TempAllocatorImpl(10 * 1024 * 1024);
-    job_system = new JPH::JobSystemThreadPool(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, JPH::thread::hardware_concurrency() - 1);
+    job_system = new JPH::JobSystemThreadPool(
+        JPH::cMaxPhysicsJobs,
+        JPH::cMaxPhysicsBarriers,
+        JPH::thread::hardware_concurrency() - 1
+        );
 
     physics_system.Init(cMaxBodies, cNumBodyMutexes, cMaxBodyPairs, cMaxContactConstraints, broad_phase_layer_interface, object_vs_broadphase_layer_filter, object_vs_object_layer_filter);
 

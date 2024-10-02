@@ -1,5 +1,12 @@
 #include "GameEngine.h"
 
+GameEngine::GameEngine():
+    currentCamera(nullptr),
+    physicsEngine(nullptr),
+    _bodyInterface(nullptr)
+{
+}
+
 GameEngine::~GameEngine()
 {
     for (const auto gameObject : gameObjects)
@@ -43,19 +50,26 @@ void GameEngine::Update()
     deltaTime = timer.GetMilisecondsElapsed();
     timer.Restart();
 
+    physicsEngine->UpdatePhysics(deltaTime);
+
     for (const auto gameObject : gameObjects)
     {
         gameObject->Update(deltaTime);
     }
 
-    physicsEngine->UpdatePhysics(deltaTime);
+
     RenderFrame();
 }
 
 void GameEngine::InitializePhysics()
 {
+    if (physicsEngine)
+    {
+        delete physicsEngine;
+    }
     physicsEngine = new PhysicsEngine();
     physicsEngine->Initialize();
+    _bodyInterface = &physicsEngine->GetPhysicsSystem()->GetBodyInterface();
 }
 
 void GameEngine::RenderFrame()
@@ -76,6 +90,8 @@ void GameEngine::RenderFrame()
         if(gameObject->IsVisible())
             gameObject->Render(currentCamera->GetViewMatrix(), currentCamera->GetProjectionMatrix());
     }
+
+    RenderGui();
 
     gfx_.RenderFrame();
 }

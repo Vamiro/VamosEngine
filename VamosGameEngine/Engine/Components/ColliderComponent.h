@@ -7,7 +7,7 @@
 
 class ColliderComponent : public Component {
 public:
-    ColliderComponent(GameObject& parent, JPH::PhysicsSystem* physicsSystem,
+    ColliderComponent(GameObject& parent, JPH::BodyInterface& body_interface,
     JPH::EMotionType motionType, JPH::ObjectLayer layer, bool allowSleeping = true,
                                  bool isTrigger = false);
     ~ColliderComponent();
@@ -22,7 +22,7 @@ public:
     [[nodiscard]] DirectX::SimpleMath::Vector3 GetScale() const;
     void SetScale(const DirectX::SimpleMath::Vector3& scale);
     void SetScale(float radius);
-    [[nodiscard]] JPH::Body* GetBody() const;
+    [[nodiscard]] JPH::BodyID GetID() const;
     [[nodiscard]] DirectX::SimpleMath::Vector3 GetPosition() const;
     [[nodiscard]] DirectX::SimpleMath::Quaternion GetRotation() const;
     [[nodiscard]] DirectX::SimpleMath::Vector3 GetPositionOffset() const;
@@ -35,13 +35,13 @@ public:
     void Destroy() override;
 
 private:
-
+    bool DestroyFlag = false;
     Delegate<void, ColliderComponent*> onCollision_;
 
-    JPH::Body* mBody;
+    JPH::BodyID mBodyID;
     JPH::Shape* mShape;
     JPH::BodyCreationSettings mSettings;
-    JPH::PhysicsSystem* mPhysicsSystem;
+    JPH::BodyInterface& mBodyInterface;
 
     JPH::Vec3 mPositionOffset = JPH::Vec3::sZero();
     JPH::Quat mRotationOffset = JPH::Quat::sIdentity();

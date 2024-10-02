@@ -46,6 +46,8 @@ bool PongApp::Start(HINSTANCE hInstance, std::string window_title, std::string w
 
 void PongApp::Update()
 {
+    GameEngine::Update();
+
     if (this->gfx_.blockInputForImGui || isPaused)
     {
         return;
@@ -55,8 +57,6 @@ void PongApp::Update()
     {
         return;
     }
-
-    GameEngine::Update();
 
     float cameraSpeed = 0.01f;
 
@@ -97,10 +97,13 @@ void PongApp::Update()
     if(velocity != JPH::Vec3(0.0f, 0.0f, 0.0f))
     {
         //velocity *= 1000.0f;
-        ball->GetComponent<ColliderComponent>()->GetBody()->SetLinearVelocity(
+        _bodyInterface->SetLinearVelocity(
+        ball->GetComponent<ColliderComponent>()->GetID(),
         {
             velocity.GetX(),
-            ball->GetComponent<ColliderComponent>()->GetBody()->GetLinearVelocity().GetY() + velocity.GetY(),
+            _bodyInterface->
+            GetLinearVelocity(ball->GetComponent<ColliderComponent>()->GetID()).GetY()
+            + velocity.GetY(),
             velocity.GetZ()
         });
     }
@@ -212,10 +215,6 @@ void PongApp::AddComponentToObject(GameObject* obj, const std::string& component
     {
         obj->AddComponent(new Model(*obj, gfx_.GetDevice().Get(), gfx_.GetDeviceContext().Get(), cb_vs_vertexshader, cb_ps_pixelshader));
     }
-
-
-    // Выводим информацию в лог или консоль о добавленном компоненте
-    std::cout << "Added component: " << component_name << " to " << obj->name << std::endl;
 }
 
 bool PongApp::InitializeScene()
@@ -231,11 +230,11 @@ bool PongApp::InitializeScene()
         ErrorLogger::Log(hr, "Failed to create pixelshader constant buffer.");
 
         ball = gameObjects.emplace_back(new GameObject("Ball"));
-        ball->transform->SetPosition(SimpleMath::Vector3(0.0f, 5.0f, 0.0f));
+        ball->transform->SetPosition(SimpleMath::Vector3(0.0f, 10.0f, -30.0f));
         ball->AddComponent(new Model(*ball, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
         ball->GetComponent<Model>()->SetModelPath("Data\\Objects\\sphere.obj");
         ball->GetComponent<Model>()->SetColor({0.0f, 0.0f, 1.0f, 1.0f});
-        auto* c = new ColliderComponent(*ball, physicsEngine->GetPhysicsSystem(), JPH::EMotionType::Dynamic, Layers::MOVING, false);
+        auto* c = new ColliderComponent(*ball, *_bodyInterface, JPH::EMotionType::Dynamic, Layers::MOVING, false);
         c->SetShape(new JPH::SphereShape(1.0f));
         ball->AddComponent(c);
         ball->AddComponent(new BallComponent(*ball));
@@ -257,7 +256,7 @@ bool PongApp::InitializeScene()
                 float b = 1.0f - r;
                 boo->GetComponent<Model>()->SetColor({r, g, b, 1.0f});
 
-                c = new ColliderComponent(*boo, physicsEngine->GetPhysicsSystem(), JPH::EMotionType::Static, Layers::NON_MOVING, true, true);
+                c = new ColliderComponent(*boo, *_bodyInterface, JPH::EMotionType::Static, Layers::NON_MOVING, true, true);
                 c->SetShape(new JPH::SphereShape(1.0f));
                 boo->AddComponent(c);
             }
@@ -268,7 +267,7 @@ bool PongApp::InitializeScene()
         floor->AddComponent(new Model(*floor, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
         floor->GetComponent<Model>()->SetModelPath("Data\\Objects\\box.obj");
         floor->transform->SetScale({100.0f, 1.0f, 100.0f});
-        c = new ColliderComponent(*floor, physicsEngine->GetPhysicsSystem(), JPH::EMotionType::Static, Layers::NON_MOVING);
+        c = new ColliderComponent(*floor, *_bodyInterface, JPH::EMotionType::Static, Layers::NON_MOVING);
         c->SetShape(new JPH::BoxShape(JPH::Vec3(200.0f, 1.0f, 200.0f)));
         floor->AddComponent(c);
 

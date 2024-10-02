@@ -6,8 +6,6 @@
 
 #include "Engine/Core/Engine.h"
 
-//TODO: Implement method for game objects to be rendered in the scene
-
 bool Graphics::Initialize(HWND hwnd, int width, int height)
 {
     this->windowHeight = height;
@@ -18,35 +16,16 @@ bool Graphics::Initialize(HWND hwnd, int width, int height)
     if (!InitializeDirectX(hwnd))
         return false;
 
-    if (!InitializeShaders())
-        return false;
+    InitializeShaders();
 
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    ImGui_ImplWin32_Init(hwnd);
-    ImGui_ImplDX11_Init(this->device.Get(), this->deviceContext.Get());
-    ImGui::StyleColorsDark();
+    InitializeGUI(hwnd);
 
     return true;
 }
 
-void Graphics::RenderFrame()
+void Graphics::RenderFrame() const
 {
-
-    _engine->RenderGui();
-
     this->swapChain->Present(0, NULL);
-}
-
-void Graphics::SetLookAt(float x, float y, float z)
-{
-    this->lookAt = true;
-}
-
-void Graphics::UnSetLookAt()
-{
-    this->lookAt = false;
 }
 
 bool Graphics::InitializeDirectX(HWND hwnd)
@@ -180,8 +159,19 @@ bool Graphics::InitializeDirectX(HWND hwnd)
     return true;
 }
 
-bool Graphics::InitializeShaders()
+bool Graphics::InitializeShaders() const
 {
     shaderManager->InitShader(ShaderData("Data\\Shaders\\simpleShader.hlsl", PixelType | VertexType));
+    return true;
+}
+
+bool Graphics::InitializeGUI(const HWND hwnd) const
+{
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui_ImplWin32_Init(hwnd);
+    ImGui_ImplDX11_Init(this->device.Get(), this->deviceContext.Get());
+    ImGui::StyleColorsDark();
     return true;
 }

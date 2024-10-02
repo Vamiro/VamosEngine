@@ -3,13 +3,15 @@
 #include "Transform.h"
 #include "Engine/Core/GameObject.h"
 
-ColliderComponent::ColliderComponent(GameObject& parent, JPH::PhysicsSystem* physicsSystem,
-                                     JPH::EMotionType motionType,  JPH::ObjectLayer layer, bool allowSleeping,
-                                     bool isTrigger):
+ColliderComponent::ColliderComponent(GameObject& parent,
+    JPH::BodyInterface& body_interface,
+    JPH::EMotionType motionType,
+    uint16_t layer = Layers::NON_MOVING,
+    bool allowSleeping,
+    bool isTrigger):
         Component(parent, "ColliderComponent"),
-        mBody(nullptr),
         mShape(nullptr),
-        mPhysicsSystem(physicsSystem),
+        mBodyInterface(body_interface),
         mMotionType(motionType),
         mLayer(layer),
         mAllowSleeping(allowSleeping),
@@ -26,26 +28,34 @@ void ColliderComponent::Start() {
         mSettings.mAllowSleeping = mAllowSleeping;
         mSettings.mIsSensor = mIsTrigger;
         mSettings.mFriction = 10.0f;
-        JPH::BodyInterface& bodyInterface = mPhysicsSystem->GetBodyInterface();
-        mBody = bodyInterface.CreateBody(mSettings);
-        bodyInterface.AddBody(mBody->GetID(), JPH::EActivation::DontActivate);
+
+        mBodyID = mBodyInterface.CreateAndAddBody(mSettings, JPH::EActivation::DontActivate);
         const auto& quat = parent->transform->GetRotationQuaternion();
         const auto& pos = parent->transform->GetPositionVector();
-        mPhysicsSystem->GetBodyInterface().SetPositionAndRotation(mBody->GetID(),
-                                                                  JPH::Vec3(pos.x, pos.y, pos.z),
-                                                                  JPH::Quat(quat.x, quat.y, quat.z, quat.w),
-                                                                  JPH::EActivation::Activate);
-        mBody->SetUserData(reinterpret_cast<JPH::uint64>(this));
+
+        mBodyInterface.SetPositionAndRotation(
+            mBodyID,
+            JPH::Vec3(pos.x, pos.y, pos.z),
+            JPH::Quat(quat.x, quat.y, quat.z, quat.w),
+            JPH::EActivation::DontActivate);
+
+        mBodyInterface.SetUserData(mBodyID, reinterpret_cast<JPH::uint64>(this));
         OnCollision().BindLambda([](const ColliderComponent* other){}); // Empty lambda
     }
 }
 
-void ColliderComponent::Update() {
+void ColliderComponent::Update()
+{
     // Update logic for the collider component if necessary
-    if (mBody->IsActive()) {
+    if(DestroyFlag)
+    {
+        Destroy();
+    }
+
+    if (mMotionType == JPH::EMotionType::Dynamic) {
         JPH::Vec3 pos{};
         JPH::Quat quat{};
-        mPhysicsSystem->GetBodyInterface().GetPositionAndRotation(mBody->GetID(), pos, quat);
+        mBodyInterface.GetPositionAndRotation(mBodyID, pos, quat);
         parent->transform->SetPosition(SimpleMath::Vector3(pos.GetX(), pos.GetY(), pos.GetZ()));
         parent->transform->SetRotation(SimpleMath::Quaternion(quat.GetX(), quat.GetY(), quat.GetZ(), quat.GetW()));
     }
@@ -67,17 +77,17 @@ void ColliderComponent::RenderGUI() {
             SetScale(SimpleMath::Vector3(scale[0], scale[1], scale[2]));
         }
     }
-    ImGui::Text(mBody->IsActive() ? "Active" : "Inactive");
-    auto pos = mBody->GetPosition();
+    ImGui::Text(mBodyInterface.IsActive(mBodyID) ? "Active" : "Inactive");
+    auto pos = mBodyInterface.GetPosition(mBodyID);
     ImGui::Text("Position: (%.2f, %.2f, %.2f)", pos.GetX(), pos.GetY(), pos.GetZ());
 }
 
 void ColliderComponent::SetActivation(const bool active) const
 {
     if(active){
-        mPhysicsSystem->GetBodyInterface().ActivateBody(mBody->GetID());
+        mBodyInterface.ActivateBody(mBodyID);
     } else {
-        mPhysicsSystem->GetBodyInterface().DeactivateBody(mBody->GetID());
+        mBodyInterface.DeactivateBody(mBodyID);
     }
 }
 
@@ -103,26 +113,26 @@ SimpleMath::Vector3 ColliderComponent::GetScale() const {
 void ColliderComponent::SetScale(const SimpleMath::Vector3& scale) {
     mScale = JPH::Vec3(scale.x, scale.y, scale.z);
     auto newShape = mShape->ScaleShape(mScale);
-    mPhysicsSystem->GetBodyInterface().SetShape(mBody->GetID(), newShape.Get(), true , JPH::EActivation::DontActivate);
+    mBodyInterface.SetShape(mBodyID, newShape.Get(), true , JPH::EActivation::DontActivate);
 }
 
 void ColliderComponent::SetScale(const float radius) {
     mScale = JPH::Vec3(radius, radius, radius);
     auto newShape = mShape->ScaleShape(mScale);
-    mPhysicsSystem->GetBodyInterface().SetShape(mBody->GetID(), newShape.Get(), true , JPH::EActivation::DontActivate);
+    mBodyInterface.SetShape(mBodyID, newShape.Get(), true , JPH::EActivation::DontActivate);
 }
 
-JPH::Body* ColliderComponent::GetBody() const {
-    return mBody;
+JPH::BodyID ColliderComponent::GetID() const {
+    return mBodyID;
 }
 
 SimpleMath::Vector3 ColliderComponent::GetPosition() const {
-    const JPH::Vec3 pos = mBody->GetPosition();
+    const JPH::Vec3 pos = mBodyInterface.GetPosition(mBodyID);
     return {pos.GetX(), pos.GetY(), pos.GetZ()};
 }
 
 SimpleMath::Quaternion ColliderComponent::GetRotation() const {
-    const JPH::Quat quat = mBody->GetRotation();
+    const JPH::Quat quat = mBodyInterface.GetRotation(mBodyID);
     return {quat.GetX(), quat.GetY(), quat.GetZ(), quat.GetW()};
 }
 
@@ -136,8 +146,7 @@ SimpleMath::Quaternion ColliderComponent::GetRotationOffset() const {
 
 void ColliderComponent::SetPositionAndRotation(const SimpleMath::Vector3& position, const SimpleMath::Quaternion& rotation) const
 {
-
-    mPhysicsSystem->GetBodyInterface().SetPositionAndRotation(mBody->GetID(),
+    mBodyInterface.SetPositionAndRotation(mBodyID,
         JPH::Vec3(position.x, position.y, position.z),
         JPH::Quat(rotation.x, rotation.y, rotation.z, rotation.w), JPH::EActivation::DontActivate);
 
@@ -145,22 +154,24 @@ void ColliderComponent::SetPositionAndRotation(const SimpleMath::Vector3& positi
 
 void ColliderComponent::SetPosition(const SimpleMath::Vector3& position) const
 {
-    mPhysicsSystem->GetBodyInterface().SetPosition(mBody->GetID(),
+    mBodyInterface.SetPosition(mBodyID,
         JPH::Vec3(position.x, position.y, position.z), JPH::EActivation::DontActivate);
 
 }
 
 void ColliderComponent::SetRotation(const SimpleMath::Quaternion& rotation) const
 {
-    mPhysicsSystem->GetBodyInterface().SetRotation(mBody->GetID(),
+    mBodyInterface.SetRotation(mBodyID,
         JPH::Quat(rotation.x, rotation.y, rotation.z, rotation.w), JPH::EActivation::DontActivate);
-
 }
 
 void ColliderComponent::Destroy()
 {
-    mBody->SetUserData(JPH::uint64());
-    //mBody->SetMotionType(JPH::EMotionType::Static);
-    mShape->Release();
-    mBody = nullptr;
+    if(DestroyFlag)
+    {
+        mBodyInterface.RemoveBody(mBodyID);
+        DestroyFlag = false;
+    } else {
+        DestroyFlag = true;
+    }
 }

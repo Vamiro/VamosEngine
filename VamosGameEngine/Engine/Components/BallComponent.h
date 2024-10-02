@@ -34,11 +34,10 @@ inline void BallComponent::Start()
     {
         colliderComponent->OnCollision().BindLambda([this](ColliderComponent* other) {
             std::cout << "Collision with " << other->GetParent().name << std::endl;
-            if(other->GetBody() != nullptr && other->GetParent().name != "Floor")
+            if(other->GetParent().name != "Floor" && other->GetParent().name != "Ball")
             {
                 other->GetParent().SetParent(this->parent);
                 other->Destroy();
-                other->GetParent().DeleteComponent(other);
             }
         });
     }
