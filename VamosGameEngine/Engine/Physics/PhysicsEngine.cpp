@@ -35,6 +35,8 @@ bool ObjectLayerPairFilterImpl::ShouldCollide(JPH::ObjectLayer inObject1, JPH::O
 {
     switch (inObject1)
     {
+    case Layers::PLAYER:
+        return inObject2 == Layers::NON_MOVING; // Player only collides with moving
     case Layers::NON_MOVING:
         return inObject2 == Layers::MOVING; // Non moving only collides with moving
     case Layers::MOVING:
@@ -50,6 +52,7 @@ BPLayerInterfaceImpl::BPLayerInterfaceImpl()
     // Create a mapping table from object to broad phase layer
     mObjectToBroadPhase[Layers::NON_MOVING] = BroadPhaseLayers::NON_MOVING;
     mObjectToBroadPhase[Layers::MOVING] = BroadPhaseLayers::MOVING;
+    mObjectToBroadPhase[Layers::PLAYER] = BroadPhaseLayers::PLAYER;
 }
 
 JPH::uint BPLayerInterfaceImpl::GetNumBroadPhaseLayers() const
@@ -70,6 +73,7 @@ const char *BPLayerInterfaceImpl::GetBroadPhaseLayerName(JPH::BroadPhaseLayer in
     {
     case (JPH::BroadPhaseLayer::Type)BroadPhaseLayers::NON_MOVING: return "NON_MOVING";
     case (JPH::BroadPhaseLayer::Type)BroadPhaseLayers::MOVING: return "MOVING";
+    case (JPH::BroadPhaseLayer::Type)BroadPhaseLayers::PLAYER: return "PLAYER";
     default: JPH_ASSERT(false); return "INVALID";
     }
 }
@@ -79,6 +83,8 @@ bool ObjectVsBroadPhaseLayerFilterImpl::ShouldCollide(JPH::ObjectLayer inLayer1,
 {
     switch (inLayer1)
     {
+    case Layers::PLAYER:
+        return inLayer2 == BroadPhaseLayers::NON_MOVING;
     case Layers::NON_MOVING:
         return inLayer2 == BroadPhaseLayers::MOVING;
     case Layers::MOVING:

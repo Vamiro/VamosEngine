@@ -35,7 +35,7 @@ bool PongApp::Start(HINSTANCE hInstance, std::string window_title, std::string w
              auto rot = SimpleMath::Quaternion::CreateFromYawPitchRoll(XMConvertToRadians(-args.Offset.x * input_device_.MouseSensitivity), 0, 0);
 
              currentCamera->transform->RotateAround(
-                 ball->transform->GetPositionVector(),
+                 ball->transform->GetGlobalPosition(),
                  rot);
             //std::cout << std::format("Rotation: ({:.2f}, {:.2f}, {:.2f})", rot.x, rot.y, rot.z) << std::endl;
          }
@@ -230,11 +230,11 @@ bool PongApp::InitializeScene()
         ErrorLogger::Log(hr, "Failed to create pixelshader constant buffer.");
 
         ball = gameObjects.emplace_back(new GameObject("Ball"));
-        ball->transform->SetPosition(SimpleMath::Vector3(0.0f, 10.0f, -30.0f));
+        ball->transform->SetGlobalPosition(SimpleMath::Vector3(0.0f, 10.0f, -30.0f));
         ball->AddComponent(new Model(*ball, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
         ball->GetComponent<Model>()->SetModelPath("Data\\Objects\\sphere.obj");
         ball->GetComponent<Model>()->SetColor({0.0f, 0.0f, 1.0f, 1.0f});
-        auto* c = new ColliderComponent(*ball, *_bodyInterface, JPH::EMotionType::Dynamic, Layers::MOVING, false);
+        auto* c = new ColliderComponent(*ball, *_bodyInterface, JPH::EMotionType::Dynamic, Layers::PLAYER);
         c->SetShape(new JPH::SphereShape(1.0f));
         ball->AddComponent(c);
         ball->AddComponent(new BallComponent(*ball));
@@ -245,7 +245,7 @@ bool PongApp::InitializeScene()
             for (auto j = -5; j <= 5; ++j)
             {
                 auto* boo = gameObjects.emplace_back(new GameObject("Obj" + std::to_string(i) + std::to_string(j)));
-                boo->transform->SetPosition(SimpleMath::Vector3(static_cast<float>(i) * 4.0f + 5, 2.0f, static_cast<float>(j) * 4.0f));
+                boo->transform->SetGlobalPosition(SimpleMath::Vector3(static_cast<float>(i) * 4.0f + 5, 2.0f, static_cast<float>(j) * 4.0f));
 
                 boo->AddComponent(new Model(*boo, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
                 boo->GetComponent<Model>()->SetModelPath("Data\\Objects\\sphere.obj");
@@ -256,7 +256,7 @@ bool PongApp::InitializeScene()
                 float b = 1.0f - r;
                 boo->GetComponent<Model>()->SetColor({r, g, b, 1.0f});
 
-                c = new ColliderComponent(*boo, *_bodyInterface, JPH::EMotionType::Static, Layers::NON_MOVING, true, true);
+                c = new ColliderComponent(*boo, *_bodyInterface, JPH::EMotionType::Static, Layers::NON_MOVING, false);
                 c->SetShape(new JPH::SphereShape(1.0f));
                 boo->AddComponent(c);
             }
@@ -266,14 +266,14 @@ bool PongApp::InitializeScene()
         floor = gameObjects.emplace_back(new GameObject("Floor"));
         floor->AddComponent(new Model(*floor, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
         floor->GetComponent<Model>()->SetModelPath("Data\\Objects\\box.obj");
-        floor->transform->SetScale({100.0f, 1.0f, 100.0f});
+        floor->transform->SetGlobalScale({100.0f, 1.0f, 100.0f});
         c = new ColliderComponent(*floor, *_bodyInterface, JPH::EMotionType::Static, Layers::NON_MOVING);
         c->SetShape(new JPH::BoxShape(JPH::Vec3(200.0f, 1.0f, 200.0f)));
         floor->AddComponent(c);
 
         auto* camera = new Camera();
 
-        camera->transform->SetPosition(SimpleMath::Vector3(0.0f, 10.0f, -10.0f));
+        camera->transform->SetGlobalPosition(SimpleMath::Vector3(0.0f, 10.0f, -10.0f));
         camera->transform->SetEulerRotate(SimpleMath::Vector3(0.0f, 45.0f, 0.0f));
 
         camera->SetProjectionValues(90.0f, static_cast<float>(gfx_.GetWindowWidth()) / static_cast<float>(gfx_.GetWindowHeight()), 0.1f,

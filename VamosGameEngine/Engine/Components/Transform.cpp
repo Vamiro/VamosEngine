@@ -2,7 +2,7 @@
 #include "ColliderComponent.h"
 #include "Engine/Core/GameObject.h"
 
-Transform::Transform(GameObject& parent) : Component(parent, "Transform")
+Transform::Transform(GameObject& parent) : Component(parent, "Transform"), parentTransform(nullptr), hasChanges(true)
 {
 }
 
@@ -10,17 +10,12 @@ Transform::~Transform()
 {
 }
 
-void Transform::Start()
+void Transform::Start() {}
+void Transform::Update(float deltaTime)
 {
+    UpdateWorldMatrix();
 }
-
-void Transform::Update()
-{
-}
-
-void Transform::Destroy()
-{
-}
+void Transform::Destroy() {}
 
 void Transform::RenderGUI()
 {
@@ -52,135 +47,111 @@ void Transform::RenderGUI()
             cc->SetActivation(true); // Activate physics
         }
     }
-
 }
 
-void Transform::SetParentWorldMatrix(const SimpleMath::Matrix& parentWorldMatrix)
+void Transform::SetParent(Transform* newParent)
 {
-    this->parentWorldMatrix = parentWorldMatrix;
-    this->hasChanges = true;
-    this->UpdateWorldMatrix();
+    parentTransform = newParent;
+    if (parentTransform)
+    {
+        (GetWorldMatrix() * parentTransform->GetWorldMatrix().Invert()).Decompose(scale, rotation, position);
+    }
+    MarkDirty();
+}
+
+void Transform::MarkDirty()
+{
+    hasChanges = true;
 }
 
 void Transform::UpdateWorldMatrix()
 {
-    this->rotation.Normalize();
-    eulerAngles = rotation.ToEuler();
-    SimpleMath::Matrix scaleMatrix = SimpleMath::Matrix::CreateScale(this->scale);
-    SimpleMath::Matrix rotationMatrix = SimpleMath::Matrix::CreateFromQuaternion(this->rotation);
-    SimpleMath::Matrix translationMatrix = SimpleMath::Matrix::CreateTranslation(this->position);
+    if (!hasChanges && (!parentTransform || !parentTransform->hasChanges)) return;
 
-    // Объединяем матрицы: масштаб, потом вращение, потом перевод
-    this->worldMatrix = scaleMatrix * rotationMatrix * translationMatrix * parentWorldMatrix;
+    rotation.Normalize();
+    eulerAngles = rotation.ToEuler();
+    // Обновляем локальную матрицу
+    const SimpleMath::Matrix scaleMatrix = SimpleMath::Matrix::CreateScale(scale);
+    const SimpleMath::Matrix rotationMatrix = SimpleMath::Matrix::CreateFromQuaternion(rotation);
+    const SimpleMath::Matrix translationMatrix = SimpleMath::Matrix::CreateTranslation(position);
+    localMatrix = scaleMatrix * rotationMatrix * translationMatrix;
+
+    // Если есть родитель, мировая матрица = локальная * мировая матрица родителя
+    if (parentTransform)
+    {
+        worldMatrix = localMatrix * parentTransform->GetWorldMatrix();
+    }
+    else
+    {
+        worldMatrix = localMatrix;
+    }
 
     // Обновляем векторы направления
-    this->vec_forward = SimpleMath::Vector3::Transform(DEFAULT_FORWARD_VECTOR, rotationMatrix * parentWorldMatrix);
-    this->vec_backward = SimpleMath::Vector3::Transform(DEFAULT_BACKWARD_VECTOR, rotationMatrix * parentWorldMatrix);
-    this->vec_left = SimpleMath::Vector3::Transform(DEFAULT_LEFT_VECTOR, rotationMatrix * parentWorldMatrix);
-    this->vec_right = SimpleMath::Vector3::Transform(DEFAULT_RIGHT_VECTOR, rotationMatrix * parentWorldMatrix);
-    this->vec_up = SimpleMath::Vector3::Transform(DEFAULT_UP_VECTOR, rotationMatrix * parentWorldMatrix);
-    this->vec_down = SimpleMath::Vector3::Transform(DEFAULT_DOWN_VECTOR, rotationMatrix * parentWorldMatrix);
+    vec_forward = SimpleMath::Vector3::Transform(DEFAULT_FORWARD_VECTOR, rotationMatrix);
+    vec_right = SimpleMath::Vector3::Transform(DEFAULT_RIGHT_VECTOR, rotationMatrix);
+    vec_up = SimpleMath::Vector3::Transform(DEFAULT_UP_VECTOR, rotationMatrix);
+
+    hasChanges = false;
 }
 
-void Transform::SetLocalMatrix(SimpleMath::Matrix& matrix)
+const SimpleMath::Matrix& Transform::GetWorldMatrix()
 {
-    this->localMatrix = matrix;
-    matrix.Decompose(scale, rotation, position);
-    this->hasChanges = true;
-    this->UpdateWorldMatrix();
-}
-
-const SimpleMath::Vector3& Transform::GetPositionVector() const
-{
-    return this->position;
-}
-
-const SimpleMath::Vector3& Transform::GetScaleVector() const
-{
-    return this->scale;
-}
-
-const SimpleMath::Quaternion& Transform::GetRotationQuaternion() const
-{
-    return this->rotation;
+    return worldMatrix;
 }
 
 void Transform::SetPosition(const SimpleMath::Vector3& pos)
 {
-    this->position = pos;
-    this->hasChanges = true;
-    this->UpdateWorldMatrix();
+    position = pos;
+    MarkDirty();
 }
 
-void Transform::AdjustPosition(const SimpleMath::Vector3& pos)
+void Transform::SetScale(const SimpleMath::Vector3& scl)
 {
-    SetPosition(this->position + pos);
+    scale = scl;
+    MarkDirty();
 }
 
-void Transform::SetScale(const SimpleMath::Vector3& scale)
+void Transform::SetRotation(const SimpleMath::Quaternion& quat)
 {
-    this->scale = scale;
-    this->hasChanges = true;
-    this->UpdateWorldMatrix();
-}
-
-void Transform::AdjustScale(const SimpleMath::Vector3& scale)
-{
-    SetScale(this->scale + scale);
-}
-
-void Transform::SetRotation(SimpleMath::Quaternion quaternion)
-{
-    rotation = quaternion;
-    this->hasChanges = true;
-    UpdateWorldMatrix();
+    rotation = quat;
+    MarkDirty();
 }
 
 void Transform::SetEulerRotate(const SimpleMath::Vector3& eulerAngle)
 {
-    // Convert Euler angles to quaternion with the correct order: Yaw -> Pitch -> Roll
     rotation = SimpleMath::Quaternion::CreateFromYawPitchRoll(
-        XMConvertToRadians(eulerAngle.y), // Yaw (Y-axis)
-        XMConvertToRadians(eulerAngle.x), // Pitch (X-axis)
-        XMConvertToRadians(eulerAngle.z)  // Roll (Z-axis)
+        XMConvertToRadians(eulerAngle.y),
+        XMConvertToRadians(eulerAngle.x),
+        XMConvertToRadians(eulerAngle.z)
     );
-
-    this->hasChanges = true;
-    UpdateWorldMatrix();
+    MarkDirty();
 }
 
-void Transform::SetLocalRotation(const SimpleMath::Quaternion& localRotation)
+void Transform::AdjustPosition(const SimpleMath::Vector3& offset)
 {
-    rotation = localRotation * rotation;
-    this->hasChanges = true;
-    UpdateWorldMatrix();
+    SetPosition(position + offset);
+}
+
+void Transform::AdjustScale(const SimpleMath::Vector3& scaleFactor)
+{
+    SetScale(scale + scaleFactor);
 }
 
 void Transform::AdjustRotation(const SimpleMath::Vector3& eulerAngle)
 {
-    SetRotation(rotation + SimpleMath::Quaternion::CreateFromYawPitchRoll(
-        XMConvertToRadians(eulerAngle.y), // Yaw (Y-axis)
-        XMConvertToRadians(eulerAngle.x), // Pitch (X-axis)
-        XMConvertToRadians(eulerAngle.z)  // Roll (Z-axis)
+    SetRotation(rotation * SimpleMath::Quaternion::CreateFromYawPitchRoll(
+        XMConvertToRadians(eulerAngle.y),
+        XMConvertToRadians(eulerAngle.x),
+        XMConvertToRadians(eulerAngle.z)
     ));
 }
 
-void Transform::AdjustRotation(float roll, float pitch, float yaw)
+void Transform::SetLookAtPos(const SimpleMath::Vector3& targetPos)
 {
-    SetRotation(rotation + SimpleMath::Quaternion::CreateFromYawPitchRoll(
-        XMConvertToRadians(yaw), // Yaw (Y-axis)
-        XMConvertToRadians(pitch), // Pitch (X-axis)
-        XMConvertToRadians(roll)  // Roll (Z-axis)
-    ));
-}
-
-void Transform::SetLookAtPos(const SimpleMath::Vector3& lookAtPos)
-{
-    //Verify that look at pos is not the same as cam pos. They cannot be the same as that wouldn't make sense and would result in undefined behavior.
-    if (lookAtPos == position)
+    if (targetPos == position)
         return;
 
-    const auto pos = position - lookAtPos;
+    const auto pos = position - targetPos;
 
 
     float pitch = 0.0f;
@@ -198,65 +169,150 @@ void Transform::SetLookAtPos(const SimpleMath::Vector3& lookAtPos)
     if (pos.z > 0)
         yaw += XM_PI;
 
-    this->SetRotation(SimpleMath::Quaternion::CreateFromYawPitchRoll(yaw, pitch, 0.0f));
+    SetRotation(SimpleMath::Quaternion::CreateFromYawPitchRoll(yaw, pitch, 0.0f));
 }
 
-void Transform::RotateAround(const SimpleMath::Vector3& point, const SimpleMath::Quaternion& rotation)
+void Transform::RotateAround(const SimpleMath::Vector3& point, const SimpleMath::Quaternion& rot)
 {
     if (point == position)
         return;
 
     SimpleMath::Vector3 translatedPos = position - point;
-    SimpleMath::Vector3 rotatedPos = SimpleMath::Vector3::Transform(translatedPos, rotation);
+    SimpleMath::Vector3 rotatedPos = SimpleMath::Vector3::Transform(translatedPos, rot);
 
-    position = rotatedPos + point;
+    SetPosition(rotatedPos + point);
     SetLookAtPos(point);
-
-    this->hasChanges = true;
-    UpdateWorldMatrix();
 }
 
-void Transform::KeepDistance(const SimpleMath::Vector3& targetPosition, float distance)
+void Transform::KeepDistance(const SimpleMath::Vector3& targetPos, float desiredDistance)
 {
-    SimpleMath::Vector3 direction = this->position - targetPosition;
+    SimpleMath::Vector3 direction = this->position - targetPos;
     float currentDistance = direction.Length();
 
-    if (currentDistance != distance)
+    if (currentDistance != desiredDistance)
     {
         direction.Normalize();
-        SimpleMath::Vector3 scaledDirection = direction * distance;
-        this->position = targetPosition + scaledDirection;
-        this->hasChanges = true;
-        this->UpdateWorldMatrix();
+        SimpleMath::Vector3 scaledDirection = direction * desiredDistance;
+        SetPosition(targetPos + scaledDirection);
     }
 }
 
 const SimpleMath::Vector3& Transform::GetForwardVector()
 {
-    return this->vec_forward;
+    if (hasChanges) UpdateWorldMatrix();
+    return vec_forward;
 }
 
 const SimpleMath::Vector3& Transform::GetRightVector()
 {
-    return this->vec_right;
-}
-
-const SimpleMath::Vector3& Transform::GetBackwardVector()
-{
-    return this->vec_backward;
-}
-
-const SimpleMath::Vector3& Transform::GetLeftVector()
-{
-    return this->vec_left;
+    if (hasChanges) UpdateWorldMatrix();
+    return vec_right;
 }
 
 const SimpleMath::Vector3& Transform::GetUpVector()
 {
-    return this->vec_up;
+    if (hasChanges) UpdateWorldMatrix();
+    return vec_up;
 }
 
-const SimpleMath::Vector3& Transform::GetDownVector()
+#pragma region Local/Global Getters and Setters
+
+// Локальные методы
+const SimpleMath::Vector3& Transform::GetLocalPosition() const
 {
-    return this->vec_down;
+    return position;
 }
+
+const SimpleMath::Quaternion& Transform::GetLocalRotation() const
+{
+    return rotation;
+}
+
+const SimpleMath::Vector3& Transform::GetLocalScale() const
+{
+    return scale;
+}
+
+void Transform::SetLocalPosition(const SimpleMath::Vector3& pos)
+{
+    SetPosition(pos);
+}
+
+void Transform::SetLocalRotation(const SimpleMath::Quaternion& rot)
+{
+    SetRotation(rot);
+}
+
+void Transform::SetLocalScale(const SimpleMath::Vector3& scl)
+{
+    SetScale(scl);
+}
+
+// Глобальные методы
+SimpleMath::Vector3 Transform::GetGlobalPosition()
+{
+    if (hasChanges) UpdateWorldMatrix();
+    return worldMatrix.Translation(); // Извлечение позиции из мировой матрицы
+}
+
+SimpleMath::Quaternion Transform::GetGlobalRotation()
+{
+    if (hasChanges) UpdateWorldMatrix();
+    SimpleMath::Vector3 globalScale, globalPos;
+    SimpleMath::Quaternion globalRotation;
+    worldMatrix.Decompose(globalScale, globalRotation, globalPos);
+    return globalRotation;
+}
+
+SimpleMath::Vector3 Transform::GetGlobalScale()
+{
+    if (hasChanges) UpdateWorldMatrix();
+    SimpleMath::Vector3 globalScale, globalPos;
+    SimpleMath::Quaternion globalRotation;
+    worldMatrix.Decompose(globalScale, globalRotation, globalPos);
+    return globalScale;
+}
+
+void Transform::SetGlobalPosition(const SimpleMath::Vector3& globalPos)
+{
+    if (parentTransform)
+    {
+        SimpleMath::Matrix invParentWorld = parentTransform->GetWorldMatrix().Invert();
+        SimpleMath::Vector3 localPos = SimpleMath::Vector3::Transform(globalPos, invParentWorld);
+        SetLocalPosition(localPos);
+    }
+    else
+    {
+        SetLocalPosition(globalPos);
+    }
+}
+
+void Transform::SetGlobalRotation(const SimpleMath::Quaternion& globalRot)
+{
+    if (parentTransform)
+    {
+        SimpleMath::Quaternion invParentRot;
+        parentTransform->GetGlobalRotation().Inverse(invParentRot);
+        SimpleMath::Quaternion localRot = invParentRot * globalRot;
+        SetLocalRotation(localRot);
+    }
+    else
+    {
+        SetLocalRotation(globalRot);
+    }
+}
+
+void Transform::SetGlobalScale(const SimpleMath::Vector3& globalScl)
+{
+    if (parentTransform)
+    {
+        SimpleMath::Vector3 parentScale = parentTransform->GetGlobalScale();
+        SetLocalScale(globalScl / parentScale); // Локальный масштаб = глобальный / родительский
+    }
+    else
+    {
+        SetLocalScale(globalScl);
+    }
+}
+
+#pragma endregion

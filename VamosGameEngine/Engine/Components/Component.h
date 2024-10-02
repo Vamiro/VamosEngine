@@ -9,7 +9,7 @@ public:
     virtual ~Component() = default;
 
     virtual void Start() = 0;
-    virtual void Update() = 0;
+    virtual void Update(float deltaTime) = 0;
     virtual void RenderGUI() = 0;
     virtual void Destroy() = 0;
 

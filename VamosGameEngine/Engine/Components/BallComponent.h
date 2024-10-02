@@ -14,7 +14,7 @@ public:
     }
 
     void Start() override;
-    void Update() override;
+    void Update(float deltaTime) override;
     void RenderGUI() override;
 
     void Destroy() override
@@ -23,6 +23,7 @@ public:
 
 private:
     ColliderComponent* colliderComponent = nullptr;
+    ColliderComponent* otherCollider = nullptr;
     int items = 0;
 };
 
@@ -36,14 +37,13 @@ inline void BallComponent::Start()
             std::cout << "Collision with " << other->GetParent().name << std::endl;
             if(other->GetParent().name != "Floor" && other->GetParent().name != "Ball")
             {
-                other->GetParent().SetParent(this->parent);
-                other->Destroy();
+                otherCollider = other;
             }
         });
     }
 }
 
-inline void BallComponent::Update()
+inline void BallComponent::Update(float deltaTime)
 {
     if (parent->GetChildren().size() != items)
     {
@@ -51,6 +51,13 @@ inline void BallComponent::Update()
         auto size = items / 50.0f + 1.0f;
         colliderComponent->SetScale(size);
         //parent->transform->SetScale({size,size,size});
+    }
+    if (otherCollider != nullptr)
+    {
+        otherCollider->GetParent().SetParent(this->parent);
+        otherCollider->SetLayer(Layers::PLAYER);
+        otherCollider->SetMotionType(JPH::EMotionType::Kinematic);
+        otherCollider = nullptr;
     }
 }
 

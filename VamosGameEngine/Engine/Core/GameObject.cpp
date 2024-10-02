@@ -17,7 +17,7 @@ void GameObject::Update(float deltaTime)
 {
     for (auto component : _components)
     {
-        component->Update();
+        component->Update(deltaTime);
     }
 }
 
@@ -29,10 +29,6 @@ GameObject::GameObject(const std::string& name, bool visible): name(name), _isVi
 
 void GameObject::Render(const DirectX::SimpleMath::Matrix& viewMatrix, const DirectX::SimpleMath::Matrix& projectionMatrix)
 {
-    for (auto child : _children)
-    {
-        child->transform->SetParentWorldMatrix(this->transform->GetWorldMatrix());
-    }
     Model* mModel = GetComponent<Model>();
     if(mModel != nullptr)
     {
@@ -67,12 +63,7 @@ void GameObject::SetParent(GameObject* parent)
         return;
     }
 
-    auto parentWorldMatrix = parent->transform->GetWorldMatrix();
-    auto currentWorldMatrix = transform->GetWorldMatrix();
-    auto localMatrix = currentWorldMatrix * parentWorldMatrix.Invert();
-
-    transform->SetLocalMatrix(localMatrix);
     _parent = parent;
     _parent->AddChild(this);
-
+    transform->SetParent(parent->transform);
 }

@@ -22,7 +22,7 @@ void Model::Start()
 
 }
 
-void Model::Update()
+void Model::Update(float deltaTime)
 {
 }
 

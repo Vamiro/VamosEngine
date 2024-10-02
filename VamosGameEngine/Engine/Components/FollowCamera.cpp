@@ -11,17 +11,17 @@ FollowCamera::FollowCamera(GameObject& parent, GameObject& target):
 void FollowCamera::Start()
 {
     parent->transform->SetPosition(
-        target->transform->GetPositionVector() +
+        target->transform->GetGlobalPosition() +
         SimpleMath::Vector3(0.0f, 10.0f, -10.0f)
     );
-    parent->transform->SetLookAtPos(target->transform->GetPositionVector());
+    parent->transform->SetLookAtPos(target->transform->GetGlobalPosition());
 }
 
-void FollowCamera::Update()
+void FollowCamera::Update(float deltaTime)
 {
-    auto pos = target->transform->GetPositionVector();
+    auto pos = target->transform->GetGlobalPosition();
     parent->transform->KeepDistance(SimpleMath::Vector3(pos.x, 30.0f, pos.z), 30.0f);
-    parent->transform->SetLookAtPos(target->transform->GetPositionVector());
+    parent->transform->SetLookAtPos(target->transform->GetGlobalPosition());
 }
 
 void FollowCamera::RenderGUI()

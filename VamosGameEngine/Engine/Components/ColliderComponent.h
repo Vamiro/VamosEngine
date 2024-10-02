@@ -13,12 +13,13 @@ public:
     ~ColliderComponent();
 
     void Start() override;
-    void Update() override;
+    void Update(float deltaTime) override;
+    void MoveKinematic(const DirectX::SimpleMath::Vector3& position, const DirectX::SimpleMath::Quaternion& rotation,
+                       float deltaTime) const;
     void RenderGUI() override;
     void SetActivation(bool active) const;
 
     void SetShape(JPH::Shape* shape);
-    void SetShape(const std::string& newShape);
     [[nodiscard]] DirectX::SimpleMath::Vector3 GetScale() const;
     void SetScale(const DirectX::SimpleMath::Vector3& scale);
     void SetScale(float radius);
@@ -30,6 +31,8 @@ public:
     void SetPositionAndRotation(const DirectX::SimpleMath::Vector3& position, const DirectX::SimpleMath::Quaternion& rotation) const;
     void SetPosition(const DirectX::SimpleMath::Vector3& position) const;
     void SetRotation(const DirectX::SimpleMath::Quaternion& rotation) const;
+    void SetLayer(uint16_t layer);
+    void SetMotionType(JPH::EMotionType motionType);
 
     Delegate<void, ColliderComponent*>& OnCollision() { return onCollision_; }
     void Destroy() override;

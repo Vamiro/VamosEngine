@@ -14,7 +14,7 @@ public:
     ~Model() override;
 
     void Start() override;
-    void Update() override;
+    void Update(float deltaTime) override;
     void Destroy() override;
     void RenderGUI() override;
     void Draw(const DirectX::SimpleMath::Matrix& worldMatrix, const DirectX::SimpleMath::Matrix& viewMatrix, const DirectX::SimpleMath::Matrix& projectionMatrix);
