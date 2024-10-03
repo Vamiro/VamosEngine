@@ -36,7 +36,7 @@ bool ObjectLayerPairFilterImpl::ShouldCollide(JPH::ObjectLayer inObject1, JPH::O
     switch (inObject1)
     {
     case Layers::PLAYER:
-        return inObject2 == Layers::NON_MOVING; // Player only collides with moving
+        return true; // Player only collides with moving
     case Layers::NON_MOVING:
         return inObject2 == Layers::MOVING; // Non moving only collides with moving
     case Layers::MOVING:
@@ -84,7 +84,7 @@ bool ObjectVsBroadPhaseLayerFilterImpl::ShouldCollide(JPH::ObjectLayer inLayer1,
     switch (inLayer1)
     {
     case Layers::PLAYER:
-        return inLayer2 == BroadPhaseLayers::NON_MOVING;
+        return true;
     case Layers::NON_MOVING:
         return inLayer2 == BroadPhaseLayers::MOVING;
     case Layers::MOVING:

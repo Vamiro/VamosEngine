@@ -48,20 +48,7 @@ void PongApp::Update()
 {
     GameEngine::Update();
 
-    if (this->gfx_.blockInputForImGui || isPaused)
-    {
-        return;
-    }
-
-    if (input_device_.IsKeyDown(InputKey::LeftShift) || input_device_.IsKeyDown(InputKey::RightShift))
-    {
-        return;
-    }
-
-    float cameraSpeed = 0.01f;
-
     float ballSpeed = 1.0f;
-
     JPH::Vec3 velocity(0.0f, 0.0f, 0.0f);
     auto forward = currentCamera->transform->GetForwardVector();
     forward.Normalize();
@@ -250,13 +237,12 @@ bool PongApp::InitializeScene()
                 boo->AddComponent(new Model(*boo, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
                 boo->GetComponent<Model>()->SetModelPath("Data\\Objects\\sphere.obj");
 
-                // Calculate color based on iterator and grid position
                 float r = static_cast<float>(i + 5) / 10.0f;
                 float g = static_cast<float>(j + 5) / 10.0f;
                 float b = 1.0f - r;
                 boo->GetComponent<Model>()->SetColor({r, g, b, 1.0f});
 
-                c = new ColliderComponent(*boo, *_bodyInterface, JPH::EMotionType::Static, Layers::NON_MOVING, false);
+                c = new ColliderComponent(*boo, *_bodyInterface, JPH::EMotionType::Static, Layers::NON_MOVING, true, true);
                 c->SetShape(new JPH::SphereShape(1.0f));
                 boo->AddComponent(c);
             }

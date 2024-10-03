@@ -2,7 +2,7 @@
 #include "ColliderComponent.h"
 #include "Engine/Core/GameObject.h"
 
-Transform::Transform(GameObject& parent) : Component(parent, "Transform"), parentTransform(nullptr), hasChanges(true)
+Transform::Transform(GameObject& parent) : Component(parent, "Transform"), parentTransform(nullptr)
 {
 }
 
@@ -11,10 +11,12 @@ Transform::~Transform()
 }
 
 void Transform::Start() {}
+
 void Transform::Update(float deltaTime)
 {
     UpdateWorldMatrix();
 }
+
 void Transform::Destroy() {}
 
 void Transform::RenderGUI()
@@ -51,12 +53,17 @@ void Transform::RenderGUI()
 
 void Transform::SetParent(Transform* newParent)
 {
+    if (parentTransform == newParent) return;
+
+    SimpleMath::Vector3 globalPosition = GetGlobalPosition();
+    SimpleMath::Quaternion globalRotation = GetGlobalRotation();
+    SimpleMath::Vector3 globalScale = GetGlobalScale();
+
     parentTransform = newParent;
-    if (parentTransform)
-    {
-        (GetWorldMatrix() * parentTransform->GetWorldMatrix().Invert()).Decompose(scale, rotation, position);
-    }
-    MarkDirty();
+
+    SetGlobalPosition(globalPosition);
+    SetGlobalRotation(globalRotation);
+    SetGlobalScale(globalScale);
 }
 
 void Transform::MarkDirty()

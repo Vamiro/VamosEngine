@@ -215,7 +215,9 @@ void ColliderComponent::Destroy()
 {
     if(DestroyFlag)
     {
+        mShape->Release();
         mBodyInterface.RemoveBody(mBodyID);
+        mBodyInterface.DestroyBody(mBodyID);
         DestroyFlag = false;
     } else {
         DestroyFlag = true;

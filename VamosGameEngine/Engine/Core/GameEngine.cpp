@@ -50,15 +50,17 @@ void GameEngine::Update()
     deltaTime = timer.GetMilisecondsElapsed();
     timer.Restart();
 
-    physicsEngine->UpdatePhysics(deltaTime);
-
     for (const auto gameObject : gameObjects)
     {
         gameObject->Update(deltaTime);
     }
 
+    if (this->gfx_.blockInputForImGui || isPaused)
+    {
+        return;
+    }
 
-    RenderFrame();
+    physicsEngine->UpdatePhysics(deltaTime);
 }
 
 void GameEngine::InitializePhysics()
@@ -68,7 +70,7 @@ void GameEngine::InitializePhysics()
         delete physicsEngine;
     }
     physicsEngine = new PhysicsEngine();
-    physicsEngine->Initialize();
+    physicsEngine->Initialize(3);
     _bodyInterface = &physicsEngine->GetPhysicsSystem()->GetBodyInterface();
 }
 

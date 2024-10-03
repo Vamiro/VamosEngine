@@ -55,8 +55,7 @@ inline void BallComponent::Update(float deltaTime)
     if (otherCollider != nullptr)
     {
         otherCollider->GetParent().SetParent(this->parent);
-        otherCollider->SetLayer(Layers::PLAYER);
-        otherCollider->SetMotionType(JPH::EMotionType::Kinematic);
+        otherCollider->GetParent().DeleteComponent(otherCollider);
         otherCollider = nullptr;
     }
 }
