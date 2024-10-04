@@ -1,6 +1,9 @@
 #include "Model.h"
 
+#include <filesystem>
+
 static ModelBuffer modelBuffer;
+bool Model::modelsLoaded = false;
 
 Model::Model(GameObject& parent, const Microsoft::WRL::ComPtr<ID3D11Device>& device,
              const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext,
@@ -11,6 +14,10 @@ Model::Model(GameObject& parent, const Microsoft::WRL::ComPtr<ID3D11Device>& dev
         cb_vs_vertexshader(&cb_vs_vertexshader),
         cb_ps_pixelshader(&cb_ps_pixelshader)
 {
+    if (!modelsLoaded) {
+        LoadAllModels(DATA_DIRECTORY);
+        modelsLoaded = true;
+    }
 }
 
 Model::~Model()
@@ -30,33 +37,6 @@ void Model::Destroy()
 {
 }
 
-void Model::Draw(const DirectX::SimpleMath::Matrix& worldMatrix, const DirectX::SimpleMath::Matrix& viewMatrix, const DirectX::SimpleMath::Matrix& projectionMatrix)
-{
-    //Update Constant buffer with WVP Matrix
-    this->cb_vs_vertexshader->data.worldViewProj = (worldMatrix * viewMatrix * projectionMatrix).Transpose();
-    this->cb_vs_vertexshader->data.inverseWorld = worldMatrix.Invert().Transpose();
-    this->cb_vs_vertexshader->ApplyChanges(0);
-    this->deviceContext->VSSetConstantBuffers(0, 1, this->cb_vs_vertexshader->GetAddressOf());
-
-    // Update the pixel shader buffer with the color of the object
-    CB_PS_PixelShader psBufferData;
-    psBufferData.objectColor = color; // conversion to float4
-    cb_ps_pixelshader->data = psBufferData;
-    cb_ps_pixelshader->ApplyChanges(0); // Applying
-
-    // Установка буфера перед отрисовкой
-    this->deviceContext->PSSetConstantBuffers(1, 1, cb_ps_pixelshader->GetAddressOf());
-
-    if(modelIndex != -1)
-    {
-        std::vector<Mesh>& meshes = modelBuffer.modelMap.at(modelBuffer.fileNames.at(modelIndex));
-        for (auto & mesh : meshes)
-        {
-            mesh.Draw();
-        }
-    }
-}
-
 void Model::RenderGUI()
 {
     auto fileNames_getter = [](void* data, int index, const char** output) -> bool
@@ -69,28 +49,84 @@ void Model::RenderGUI()
         if (current_fileName.empty())
             return false;
 
-        *output = current_fileName.c_str();
+        *output = strdup(std::filesystem::path(current_fileName).filename().string().c_str());
         return true;
     };
 
     ImGui::ColorEdit4("Object Color", reinterpret_cast<float*>(&color));
     ImGui::Combo("Model",
-        &modelIndex,
-        fileNames_getter,
-        &modelBuffer.fileNames,
-        modelBuffer.fileNames.size());
+                 &modelIndex,
+                 fileNames_getter,
+                 &modelBuffer.fileNames,
+                 modelBuffer.fileNames.size());
+
+    if(ImGui::IsItemEdited())
+    {
+        SetModelPath(modelBuffer.fileNames[modelIndex]);
+    }
+
+    // static char texturePath[128] = "";
+    // ImGui::InputText("Texture Path", texturePath, IM_ARRAYSIZE(texturePath));
+    // if (ImGui::Button("Set Texture")) {
+    //     SetTexture(texturePath);
+    // }
+}
+
+void Model::Draw(const DirectX::SimpleMath::Matrix& worldMatrix, const DirectX::SimpleMath::Matrix& viewMatrix, const DirectX::SimpleMath::Matrix& projectionMatrix)
+{
+    //Update Constant buffer with WVP Matrix
+    this->cb_vs_vertexshader->data.world = worldMatrix.Transpose();
+    this->cb_vs_vertexshader->data.cameraView = viewMatrix.Transpose();
+    this->cb_vs_vertexshader->data.cameraProj = projectionMatrix.Transpose();
+    this->cb_vs_vertexshader->data.InvWorldView = worldMatrix.Invert().Transpose();
+    this->cb_vs_vertexshader->ApplyChanges(0);
+    this->deviceContext->VSSetConstantBuffers(0, 1, this->cb_vs_vertexshader->GetAddressOf());
+
+    // Update the pixel shader buffer with the color of the object
+    CB_PS_PixelShader psBufferData;
+    psBufferData.objectColor = color;
+    cb_ps_pixelshader->data = psBufferData;
+    cb_ps_pixelshader->ApplyChanges(0);
+
+    this->deviceContext->PSSetConstantBuffers(1, 1, cb_ps_pixelshader->GetAddressOf());
+
+    for (size_t i = 0; i < textures.size(); ++i)
+    {
+        this->deviceContext->PSSetShaderResources(i, 1, textures[i].GetTextureResourceViewAddress());
+    }
+
+    if(modelIndex != -1)
+    {
+        std::vector<Mesh>& meshes = modelBuffer.modelMap.at(modelBuffer.fileNames.at(modelIndex));
+        for (auto & mesh : meshes)
+        {
+            mesh.Draw();
+        }
+    }
+}
+
+void Model::SetTexture(const std::string& texturePath) {
+    textures.clear();
+    textures.push_back(Texture(this->device.Get(), texturePath, aiTextureType_DIFFUSE));
+}
+
+void Model::LoadAllModels(const std::string& filePath)
+{
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(filePath)) {
+        if (entry.path().extension() == ".obj" || entry.path().extension() == ".blend" || entry.path().extension() == ".fbx"){
+            auto file = entry.path().string().substr(entry.path().string().find("Data\\"));
+            modelBuffer.fileNames.push_back(file);
+            modelBuffer.modelMap.emplace(file, std::vector<Mesh>());
+        }
+    }
 }
 
 void Model::SetModelPath(const std::string& filePath)
 {
-    //TODO make buffer for meshes (optimisation)
-
     if (!filePath.empty())
     {
         directory = filePath;
-        this->filePath = filePath;
-
-        auto model = modelBuffer.modelMap.find(directory);
+        auto model = modelBuffer.modelMap.find(filePath);
 
         if (model != modelBuffer.modelMap.end())
         {
@@ -98,20 +134,22 @@ void Model::SetModelPath(const std::string& filePath)
             {
                 if(filePath == modelBuffer.fileNames[i]) modelIndex = i;
             }
+
+            if(model->second.empty())
+            {
+                try
+                {
+                    this->LoadModel();
+                }
+                catch (COMException& exception)
+                {
+                    ErrorLogger::Log(exception);
+                }
+            }
         }
         else
         {
-            try
-            {
-                modelBuffer.fileNames.push_back(filePath.c_str());
-                modelBuffer.modelMap.emplace(filePath, std::vector<Mesh>());
-                modelIndex = modelBuffer.fileNames.size() - 1;
-                this->LoadModel();
-            }
-            catch (COMException& exception)
-            {
-                ErrorLogger::Log(exception);
-            }
+            ErrorLogger::Log("Model not found in model buffer.");
         }
     }
 }
@@ -143,8 +181,9 @@ void Model::ProcessNode(aiNode* node, const aiScene* scene)
     }
 }
 
-std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* pMaterial, aiTextureType textureType,
-                                                 const aiScene* pScene)
+std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* pMaterial,
+    aiTextureType textureType,
+    const aiScene* pScene)
 {
     std::vector<Texture> materialTextures;
     auto storetype = TextureStorageType::Invalid;
@@ -157,23 +196,10 @@ std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* pMaterial, aiTextur
         switch (textureType)
         {
         case aiTextureType_DIFFUSE:
-            // if (pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, aiColor) == AI_SUCCESS)
-            // {
-            //     DirectX::SimpleMath::Color color;
-            //
-            //     if (aiColor.IsBlack())
-            //         color = DirectX::SimpleMath::Color(1.0f, 1.0f, 1.0f, 1.0f);
-            //     else
-            //         color = DirectX::SimpleMath::Color(aiColor.r, aiColor.g, aiColor.b, 1.0f);
-            //
-            //     materialTextures.push_back(Texture(this->device.Get(), color, textureType));
-            //     return materialTextures;
-            // }
             DirectX::SimpleMath::Color color;
             color = DirectX::SimpleMath::Color(1.0f, 1.0f, 1.0f, 1.0f);
             materialTextures.push_back(Texture(this->device.Get(), color, textureType));
             return materialTextures;
-            break;
         }
     }
     else

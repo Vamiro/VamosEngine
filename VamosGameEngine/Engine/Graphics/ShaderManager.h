@@ -42,6 +42,7 @@ public:
     ShaderManager(Graphics* graphics) : _graphics(graphics)
     {
     };
+    ~ShaderManager();
     void InitShader(ShaderData data);
     void SetShader(ShaderData data);
     void CompileShaderFromFile(std::string shaderName, D3D_SHADER_MACRO shaderMacros[], LPCSTR entryPoint, LPCSTR shaderModel, ID3DBlob** blobout);

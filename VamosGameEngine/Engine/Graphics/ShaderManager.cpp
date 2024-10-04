@@ -9,6 +9,33 @@ ShaderManager::ShaderManager()
 
 }
 
+ShaderManager::~ShaderManager()
+{
+	for (auto shader : shaders)
+	{
+		if (shader.second.VShader != nullptr)
+		{
+			shader.second.VShader->Release();
+		}
+		if (shader.second.PShader != nullptr)
+		{
+			shader.second.PShader->Release();
+		}
+		if (shader.second.GShader != nullptr)
+		{
+			shader.second.GShader->Release();
+		}
+		if (shader.second.CShader != nullptr)
+		{
+			shader.second.CShader->Release();
+		}
+	}
+	if (inputLayout != nullptr)
+	{
+		inputLayout->Release();
+	}
+}
+
 void ShaderManager::InitShader(ShaderData data)
 {
 	auto shaderPair = shaders.find(data.name);
@@ -96,10 +123,19 @@ void ShaderManager::SetShader(ShaderData data)
 
 void ShaderManager::CompileShaderFromFile(std::string shaderName, D3D_SHADER_MACRO shaderMacros[], LPCSTR entryPoint, LPCSTR shaderModel, ID3DBlob** blobout)
 {
-
 	std::wstring wshaderName = std::wstring(shaderName.begin(), shaderName.end());
 	ID3DBlob* errorBlob;
-	auto res = D3DCompileFromFile(wshaderName.c_str(), shaderMacros, NULL, entryPoint, shaderModel, D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, blobout, &errorBlob);
+	auto res = D3DCompileFromFile(
+		wshaderName.c_str(),										// File Name
+		shaderMacros,												// Shader Macros (Preprocessor definitions)
+		NULL,														// Include D3D_SHADER_MACRO
+		entryPoint,													// Entry Point
+		shaderModel,
+		D3DCOMPILE_SKIP_OPTIMIZATION | D3DCOMPILE_DEBUG,
+		0,
+		blobout,
+		&errorBlob
+		);
 	ErrorLogger::Log(res, "Failed to compile shader");
 }
 

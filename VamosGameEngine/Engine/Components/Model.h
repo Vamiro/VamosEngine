@@ -24,10 +24,13 @@ public:
     [[nodiscard]] DirectX::SimpleMath::Color GetColor() const { return color; }
     void SetColor(const DirectX::SimpleMath::Color& value) { color = value; }
 
+    void SetTexture(const std::string& texturePath);
+
 private:
     DirectX::SimpleMath::Color color = {1.0f, 1.0f, 1.0f, 1.0f};
 
     int modelIndex = -1;
+    std::vector<Texture> textures;
 
     Microsoft::WRL::ComPtr<ID3D11Device> device;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext;
@@ -38,6 +41,8 @@ private:
     std::string filePath = "";
 
     bool LoadModel();
+    static bool modelsLoaded;
+    static void LoadAllModels(const std::string& filePath);
 
     void ProcessNode(aiNode* node, const aiScene* Scene);
     Mesh ProcessMesh(aiMesh* mesh, const aiScene* Scene);

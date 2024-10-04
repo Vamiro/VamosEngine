@@ -35,6 +35,7 @@ PS_IN VSMain(VS_IN input)
 
 float4 PSMain(PS_IN input) : SV_TARGET
 {
-    float4 texColor = tex.Sample(texSampler, input.texCoord);  // Получение цвета из текстуры
-    return texColor * objectColor;
+    float4 texColor = tex.Sample(texSampler, input.texCoord);
+
+    return texColor * 1.0f - objectColor;
 }

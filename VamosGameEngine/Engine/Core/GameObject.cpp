@@ -5,6 +5,8 @@
 #include "Engine/Components/Model.h"
 #include "Engine/Components/ColliderComponent.h"
 
+int GameObject::nextId = 0;
+
 void GameObject::Start()
 {
     for (auto component : _components)
@@ -21,7 +23,7 @@ void GameObject::Update(float deltaTime)
     }
 }
 
-GameObject::GameObject(const std::string& name, bool visible): name(name), _isVisible(visible)
+GameObject::GameObject(const std::string& name, const bool visible): name(name), id(nextId++), _isVisible(visible)
 {
     transform = new Transform(*this);
     _components.push_back(transform);
@@ -34,7 +36,6 @@ void GameObject::Render(const DirectX::SimpleMath::Matrix& viewMatrix, const Dir
     {
         mModel->Draw(this->transform->GetWorldMatrix(), viewMatrix, projectionMatrix);
     }
-
 }
 
 void GameObject::RenderComponentsGUI()

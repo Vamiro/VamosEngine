@@ -14,6 +14,7 @@ GameEngine::~GameEngine()
         gameObject->Destroy();
         delete gameObject;
     }
+
 }
 
 bool GameEngine::Start(HINSTANCE hInstance, std::string window_title, std::string window_class, int width,
@@ -85,7 +86,7 @@ void GameEngine::RenderFrame()
     gfx_.GetDeviceContext()->OMSetBlendState(NULL, NULL, 0xFFFFFFFF);
     gfx_.GetDeviceContext()->PSSetSamplers(0, 1, gfx_.GetSamplerState().GetAddressOf());
 
-    gfx_.shaderManager->SetShader(ShaderData("Data\\Shaders\\simpleShader.hlsl", PixelType | VertexType));
+    gfx_.shaderManager->SetShader(ShaderData("Data\\Shaders\\lightShader.hlsl", PixelType | VertexType));
 
     for (const auto gameObject : gameObjects)
     {

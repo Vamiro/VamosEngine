@@ -6,6 +6,12 @@
 
 #include "Engine/Core/Engine.h"
 
+Graphics::~Graphics()
+{
+    delete shaderManager;
+    shaderManager = nullptr;
+}
+
 bool Graphics::Initialize(HWND hwnd, int width, int height)
 {
     this->windowHeight = height;
@@ -161,8 +167,16 @@ bool Graphics::InitializeDirectX(HWND hwnd)
 
 bool Graphics::InitializeShaders() const
 {
-    shaderManager->InitShader(ShaderData("Data\\Shaders\\simpleShader.hlsl", PixelType | VertexType));
+    shaderManager->InitShader(ShaderData("Data\\Shaders\\lightShader.hlsl", PixelType | VertexType));
     return true;
+
+    // std::vector<std::string> shaderNames = {"lightShader", "simpleShader"};
+    // for (const auto& name : shaderNames)
+    // {
+    //     shaderManager->InitShader(ShaderData("Data\\CompiledShaders\\" + name + "_ps.cso", PixelType));
+    //     shaderManager->InitShader(ShaderData("Data\\CompiledShaders\\" + name + "_vs.cso", VertexType));
+    // }
+    // return true;
 }
 
 bool Graphics::InitializeGUI(const HWND hwnd) const

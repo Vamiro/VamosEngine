@@ -46,11 +46,17 @@ public:
 
     void RenderComponentsGUI() const;
 
+    [[nodiscard]] int GetId() const { return id; }
+
     std::string name;
     Transform* transform;
 
 protected:
+    static int nextId;
+    const int id;
+
     bool _isVisible;
+
     GameObject* _parent = nullptr;
     std::vector<GameObject*> _children;
     std::vector<Component*> _components;

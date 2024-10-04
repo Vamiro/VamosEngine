@@ -7,12 +7,15 @@ add_compile_definitions(UNICODE)
 
 set(INCLUDE_DIRECTORIES ${CMAKE_SOURCE_DIR}/VamosGameEngine/includes)
 set(DATA_DIRECTORY ${CMAKE_SOURCE_DIR}/VamosGameEngine/Engine/Data)
+add_definitions(-DDATA_DIRECTORY="${DATA_DIRECTORY}")
 
-include_directories(VamosGameEngine)
-include_directories(VamosGameEngine/Engine/Core/Input)
-include_directories(VamosGameEngine/Engine/Utilities/Delegate)
-include_directories(VamosGameEngine/includes)
-include_directories(VamosGameEngine/ThirdParty)
+include_directories(
+        ${CMAKE_SOURCE_DIR}/VamosGameEngine
+        ${CMAKE_SOURCE_DIR}/VamosGameEngine/Engine/Core/Input
+        ${CMAKE_SOURCE_DIR}/VamosGameEngine/Engine/Utilities/Delegate
+        ${CMAKE_SOURCE_DIR}/VamosGameEngine/includes
+        ${CMAKE_SOURCE_DIR}/VamosGameEngine/ThirdParty
+)
 
 add_executable(VamosGameEngine WIN32
         VamosGameEngine/Engine/Core/Input/InputDevice.cpp
@@ -92,6 +95,7 @@ add_executable(VamosGameEngine WIN32
         VamosGameEngine/Engine/Components/FollowCamera.h
         VamosGameEngine/Engine/Components/FollowCamera.cpp
         VamosGameEngine/Engine/Components/BallComponent.h
+        VamosGameEngine/Engine/Components/TextureBuffer.h
 )
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -102,7 +106,19 @@ add_subdirectory(VamosGameEngine/ThirdParty/assimp)
 
 target_link_libraries(VamosGameEngine d3d11.lib dxgi.lib d3dcompiler.lib DirectXTK assimp Jolt)
 
-add_custom_command(TARGET VamosGameEngine POST_BUILD
+add_custom_target(CopyData
+        COMMAND ${CMAKE_COMMAND} -E remove_directory $<TARGET_FILE_DIR:VamosGameEngine>/Data
+        COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:VamosGameEngine>/Data
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${DATA_DIRECTORY}"
-        $<TARGET_FILE_DIR:VamosGameEngine>/Data)
+        $<TARGET_FILE_DIR:VamosGameEngine>/Data
+        COMMAND ${CMAKE_COMMAND} -E echo "Copying Data directory"
+)
+add_dependencies(${PROJECT_NAME} CopyData)
+
+#add_custom_target(CompileShaders
+#        COMMAND ${CMAKE_COMMAND} -E echo "Compiling shaders..."
+#        COMMAND ${CMAKE_COMMAND} -E env cmd /c "\"${CMAKE_SOURCE_DIR}\\compile_shaders.bat\" \"${CMAKE_SOURCE_DIR}\""
+#        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+#)
+#add_dependencies(${PROJECT_NAME} CompileShaders)

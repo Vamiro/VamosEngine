@@ -15,6 +15,7 @@ class Graphics
 {
 public:
     Graphics(Engine* engine) : _engine(engine) {};
+    ~Graphics();
     bool Initialize(HWND hwnd, int width, int height);
     void RenderFrame() const;
     bool blockInputForImGui = false;

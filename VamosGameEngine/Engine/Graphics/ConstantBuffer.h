@@ -7,8 +7,10 @@
 
 struct CB_VS_VertexShader
 {
-    DirectX::XMMATRIX worldViewProj;
-    DirectX::XMMATRIX inverseWorld;
+    DirectX::XMFLOAT4X4 world;
+    DirectX::XMFLOAT4X4 cameraView;
+    DirectX::XMFLOAT4X4 cameraProj;
+    DirectX::XMFLOAT4X4 InvWorldView;
 };
 
 struct CB_PS_PixelShader

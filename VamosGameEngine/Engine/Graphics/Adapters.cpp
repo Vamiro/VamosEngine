@@ -35,3 +35,4 @@ AdapterData::AdapterData(IDXGIAdapter* pAdapter)
         ErrorLogger::Log(hr, "Failed to Get Description for IDXGIAdapter.");
     }
 }
+
