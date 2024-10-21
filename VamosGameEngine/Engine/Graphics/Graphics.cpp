@@ -1,10 +1,5 @@
-#include "graphics.h"
-#include <D3D11.h>
-#include <ImGUI/imgui.h>
-#include <ImGUI/imgui_impl_dx11.h>
-#include <ImGUI/imgui_impl_win32.h>
+#include "Graphics.h"
 
-#include "Engine/Core/Engine.h"
 
 Graphics::~Graphics()
 {
@@ -16,7 +11,6 @@ bool Graphics::Initialize(HWND hwnd, int width, int height)
 {
     this->windowHeight = height;
     this->windowWidth = width;
-    this->fpsTimer.Start();
     this->shaderManager = new ShaderManager(this);
     
     if (!InitializeDirectX(hwnd))
@@ -48,7 +42,7 @@ bool Graphics::InitializeDirectX(HWND hwnd)
 
         DXGI_SWAP_CHAIN_DESC scd = {};
 
-        scd.BufferCount                           = 1;                                      //Number of back buffers
+        scd.BufferCount                           = 2;                                      //Number of back buffers
         scd.BufferDesc.Width                      = this->windowWidth;                      //Buffer width
         scd.BufferDesc.Height                     = this->windowHeight;                     //Buffer height
         scd.BufferDesc.Format                     = DXGI_FORMAT_R8G8B8A8_UNORM;             //Buffer display format
@@ -114,7 +108,7 @@ bool Graphics::InitializeDirectX(HWND hwnd)
 
         CD3D11_RASTERIZER_DESC rasterizerDesc(D3D11_DEFAULT);
         rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-        rasterizerDesc.CullMode = D3D11_CULL_NONE;
+        rasterizerDesc.CullMode = D3D11_CULL_BACK;
         rasterizerDesc.FrontCounterClockwise = TRUE;
         rasterizerDesc.DepthBias = D3D11_DEFAULT_DEPTH_BIAS;
         rasterizerDesc.DepthBiasClamp = D3D11_DEFAULT_DEPTH_BIAS_CLAMP;
@@ -133,7 +127,7 @@ bool Graphics::InitializeDirectX(HWND hwnd)
         ErrorLogger::Log(hr, "Failed to create rasterizer state.");
 
         D3D11_RENDER_TARGET_BLEND_DESC renderTargetBlendDesc = {0};
-        renderTargetBlendDesc.BlendEnable                = true;                                 //Enable blending
+        renderTargetBlendDesc.BlendEnable                = TRUE;                                 //Enable blending
         renderTargetBlendDesc.SrcBlend                   = D3D11_BLEND_SRC_ALPHA;                //How to blend the new color
         renderTargetBlendDesc.DestBlend                  = D3D11_BLEND_INV_SRC_ALPHA;            //How to blend the existing color
         renderTargetBlendDesc.BlendOp                    = D3D11_BLEND_OP_ADD;                   //How to combine the two colors
@@ -147,8 +141,8 @@ bool Graphics::InitializeDirectX(HWND hwnd)
         hr = this->device->CreateBlendState(&blendDesc, this->blendState.GetAddressOf());
         ErrorLogger::Log(hr, "Failed to create blend state.");
 
-        spriteBatch = std::make_unique<SpriteBatch>(this->deviceContext.Get());
-        spriteFont = std::make_unique<SpriteFont>(this->device.Get(), L"Data\\Fonts\\pixel.spritefont");
+        spriteBatch = std::make_unique<DirectX::SpriteBatch>(this->deviceContext.Get());
+        spriteFont = std::make_unique<DirectX::SpriteFont>(this->device.Get(), L"Data\\Fonts\\pixel.spritefont");
 
         CD3D11_SAMPLER_DESC sampDesc(D3D11_DEFAULT);
         sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;

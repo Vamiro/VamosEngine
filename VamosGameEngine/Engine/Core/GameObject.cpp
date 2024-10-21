@@ -1,9 +1,7 @@
 ﻿#include "GameObject.h"
 
-#include "Engine/Components/Component.h"
 #include "Engine/Components/Transform.h"
 #include "Engine/Components/Model.h"
-#include "Engine/Components/ColliderComponent.h"
 
 int GameObject::nextId = 0;
 
@@ -29,18 +27,18 @@ GameObject::GameObject(const std::string& name, const bool visible): name(name),
     _components.push_back(transform);
 }
 
-void GameObject::Render(const DirectX::SimpleMath::Matrix& viewMatrix, const DirectX::SimpleMath::Matrix& projectionMatrix)
+void GameObject::Render(const DirectX::SimpleMath::Matrix& viewMatrix, const DirectX::SimpleMath::Matrix& projectionMatrix,
+    DirectX::SimpleMath::Vector3 lightDirection)
 {
     Model* mModel = GetComponent<Model>();
     if(mModel != nullptr)
     {
-        mModel->Draw(this->transform->GetWorldMatrix(), viewMatrix, projectionMatrix);
+        mModel->Draw(this->transform->GetWorldMatrix(), viewMatrix, projectionMatrix, lightDirection);
     }
 }
 
 void GameObject::RenderComponentsGUI()
 {
-
     ImGui::Checkbox("Visible", &_isVisible);
     for (const auto component : _components)
     {
@@ -67,4 +65,10 @@ void GameObject::SetParent(GameObject* parent)
     _parent = parent;
     _parent->AddChild(this);
     transform->SetParent(parent->transform);
+}
+
+void GameObject::DeleteComponent(Component* component)
+{
+    component->Destroy();
+    std::erase(_components, component);
 }

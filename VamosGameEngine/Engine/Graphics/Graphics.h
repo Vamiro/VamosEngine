@@ -1,13 +1,14 @@
 #pragma once
-#include "Adapters.h"
-#include "shaders.h"
+#include <D3D11.h>
+#include <ImGUI/imgui.h>
+#include <ImGUI/imgui_impl_dx11.h>
+#include <ImGUI/imgui_impl_win32.h>
 
+#include "Adapters.h"
+#include "Shaders.h"
 #include "ShaderManager.h"
 #include "SpriteBatch.h"
 #include "SpriteFont.h"
-#include "Engine/Rendering/Camera.h"
-#include "Engine/Utilities/Timer.h"
-#include "Engine/Core/GameObject.h"
 
 class Engine;
 
@@ -31,12 +32,11 @@ public:
     int GetWindowHeight() const { return windowHeight; }
     int GetWindowWidth() const { return windowWidth; }
 
-    SpriteBatch* GetSpriteBatch() const { return spriteBatch.get(); }
-    SpriteFont* GetSpriteFont() const { return spriteFont.get(); }
+    DirectX::SpriteBatch* GetSpriteBatch() const { return spriteBatch.get(); }
+    DirectX::SpriteFont* GetSpriteFont() const { return spriteFont.get(); }
 
 private:
     Engine* _engine = nullptr;
-    Timer fpsTimer;
     bool InitializeDirectX(HWND hwnd);
     bool InitializeShaders() const;
     bool InitializeGUI(HWND hwnd) const;
@@ -57,8 +57,8 @@ private:
     Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizerStateCullFront;
     Microsoft::WRL::ComPtr<ID3D11BlendState> blendState;
 
-    std::unique_ptr<SpriteBatch> spriteBatch;
-    std::unique_ptr<SpriteFont> spriteFont;
+    std::unique_ptr<DirectX::SpriteBatch> spriteBatch;
+    std::unique_ptr<DirectX::SpriteFont> spriteFont;
 
     Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
 };

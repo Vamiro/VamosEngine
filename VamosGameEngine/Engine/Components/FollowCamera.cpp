@@ -1,31 +1,48 @@
 ﻿#include "FollowCamera.h"
-#include "Transform.h"
-#include "Engine/Core/GameObject.h"
+#include "Engine/Utilities/ImGuiHelper.h"
 
-FollowCamera::FollowCamera(GameObject& parent, GameObject& target):
+FollowCamera::FollowCamera(GameObject& parent, Transform& cameraTransform) :
     Component(parent, "FollowCamera"),
-    target(&target)
+    cameraTransform(&cameraTransform)
 {
 }
 
 void FollowCamera::Start()
 {
-    parent->transform->SetPosition(
-        target->transform->GetGlobalPosition() +
-        SimpleMath::Vector3(0.0f, 10.0f, -10.0f)
-    );
-    parent->transform->SetLookAtPos(target->transform->GetGlobalPosition());
 }
 
 void FollowCamera::Update(float deltaTime)
 {
-    auto pos = target->transform->GetGlobalPosition();
-    parent->transform->KeepDistance(SimpleMath::Vector3(pos.x, 30.0f, pos.z), 30.0f);
-    parent->transform->SetLookAtPos(target->transform->GetGlobalPosition());
+    Follow();
+}
+
+void FollowCamera::RotateAround(float mouseX)
+{
+    if (cameraTransform != nullptr)
+    {
+        cameraTransform->RotateAround(parent->transform->GetGlobalPosition(), DirectX::SimpleMath::Vector3::Up, mouseX);
+        cameraOffset = DirectX::SimpleMath::Vector3::Transform(cameraOffset,
+                                                      DirectX::SimpleMath::Matrix::CreateFromAxisAngle(
+                                                          DirectX::SimpleMath::Vector3::Up, DirectX::XMConvertToRadians(mouseX)));
+    }
+}
+
+void FollowCamera::Follow()
+{
+    if (cameraOffset == DirectX::SimpleMath::Vector3::Zero)
+    {
+        cameraOffset.z = -distance;
+        cameraOffset.y = height;
+    }
+
+    //cameraTransform.position = Vector3.Lerp(cameraTransform.position, this.transform.position + cameraOffset, smoothSpeed * Time.deltaTime);
+    cameraTransform->SetPosition(parent->transform->GetGlobalPosition() + cameraOffset);
+    cameraTransform->SetLookAtPos(parent->transform->GetGlobalPosition() + centerOffset);
 }
 
 void FollowCamera::RenderGUI()
 {
+    ImGuiHelper::Vector3GUI("Camera Offset", cameraOffset);
 }
 
 void FollowCamera::Destroy()

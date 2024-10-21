@@ -15,8 +15,6 @@
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include "Jolt/RegisterTypes.h"
 #include "Jolt/Renderer/DebugRenderer.h"
-
-
 #include <cstdarg>
 
 

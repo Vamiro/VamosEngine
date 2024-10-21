@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.28)
 project(VamosGameEngine)
 
 set(CMAKE_CXX_STANDARD 20)
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:LIBCMTD")
+#set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
+#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
 
 add_compile_definitions(UNICODE)
 
@@ -18,11 +21,11 @@ include_directories(
 )
 
 add_executable(VamosGameEngine WIN32
+        VamosGameEngine/Engine/Core/Engine.cpp
+        VamosGameEngine/Engine/Core/Engine.h
         VamosGameEngine/Engine/Core/Input/InputDevice.cpp
         VamosGameEngine/Engine/Core/Input/InputDevice.h
         VamosGameEngine/Engine/Core/Input/Key.h
-        VamosGameEngine/Engine/Core/Engine.cpp
-        VamosGameEngine/Engine/Core/Engine.h
         VamosGameEngine/Engine/Core/GameEngine.cpp
         VamosGameEngine/Engine/Core/GameEngine.h
         VamosGameEngine/Engine/Core/Window.cpp
@@ -75,14 +78,10 @@ add_executable(VamosGameEngine WIN32
         VamosGameEngine/Engine/Components/Transform.h
         VamosGameEngine/Engine/Graphics/ShaderManager.cpp
         VamosGameEngine/Engine/Graphics/ShaderManager.h
-        VamosGameEngine/Engine/Apps/PongApp/GameObjects/SphereObject.cpp
-        VamosGameEngine/Engine/Apps/PongApp/GameObjects/SphereObject.h
         VamosGameEngine/Engine/Apps/TestApp/TestApp.cpp
         VamosGameEngine/Engine/Apps/TestApp/TestApp.h
         VamosGameEngine/Engine/Apps/PongApp/PongApp.cpp
         VamosGameEngine/Engine/Apps/PongApp/PongApp.h
-        VamosGameEngine/Engine/Apps/PongApp/GameObjects/BoxObject.cpp
-        VamosGameEngine/Engine/Apps/PongApp/GameObjects/BoxObject.h
         VamosGameEngine/Engine/Components/Component.h
         VamosGameEngine/Engine/Core/GameObject.cpp
         VamosGameEngine/Engine/Core/GameObject.h
@@ -95,7 +94,10 @@ add_executable(VamosGameEngine WIN32
         VamosGameEngine/Engine/Components/FollowCamera.h
         VamosGameEngine/Engine/Components/FollowCamera.cpp
         VamosGameEngine/Engine/Components/BallComponent.h
+        VamosGameEngine/Engine/Components/BallComponent.cpp
         VamosGameEngine/Engine/Components/TextureBuffer.h
+        VamosGameEngine/Engine/Utilities/ImGuiHelper.cpp
+        VamosGameEngine/Engine/Utilities/ImGuiHelper.h
 )
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})

@@ -1,7 +1,13 @@
 ﻿#include "Engine.h"
 
-Engine::Engine(): input_device_(this), gfx_(this)
+InputDevice* Engine::input_device_ = nullptr;
+
+Graphics* Engine::gfx_ = nullptr;
+
+Engine::Engine()
 {
+    input_device_ = new InputDevice(this);
+    gfx_ = new Graphics(this);
 }
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -16,6 +22,14 @@ LRESULT Engine::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_QUIT: {
         isClosed = true;
         return 0;
+    }
+    case WM_ACTIVATE: {
+            if (LOWORD(wParam) == WA_INACTIVE) {
+                isFocused = false;
+            } else {
+                isFocused = true;
+            }
+            return 0;
     }
     case WM_INPUT: {
         UINT dwSize = 0;
@@ -40,7 +54,7 @@ LRESULT Engine::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                  raw->data.keyboard.Message,
                  raw->data.keyboard.VKey);
                  */
-            input_device_.KeyboardEvent({
+            input_device_->KeyboardEvent({
                 raw->data.keyboard.MakeCode,
                 raw->data.keyboard.Flags,
                 raw->data.keyboard.VKey,
@@ -49,14 +63,14 @@ LRESULT Engine::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         else if (raw->header.dwType == RIM_TYPEMOUSE)
         {
             //printf(" Mouse: X=%04d Y:%04d \n", raw->data.mouse.lLastX, raw->data.mouse.lLastY);
-            input_device_.MouseEvent({
+            input_device_->MouseEvent({
                 raw->data.mouse.usFlags,
                 raw->data.mouse.usButtonFlags,
                 static_cast<int>(raw->data.mouse.ulExtraInformation),
                 static_cast<int>(raw->data.mouse.ulRawButtons),
                 static_cast<short>(raw->data.mouse.usButtonData),
-                raw->data.mouse.lLastX,
-                raw->data.mouse.lLastY
+                static_cast<int>(raw->data.mouse.lLastX),
+                static_cast<int>(raw->data.mouse.lLastY)
             });
         }
 

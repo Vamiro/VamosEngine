@@ -1,8 +1,7 @@
 #include <windows.h>
 
-#include <Engine/Core/GameEngine.h>
+#include "Engine/Core/GameEngine.h"
 #include "Engine/Apps/PongApp/PongApp.h"
-#include "Engine/Apps/TestApp/TestApp.h"
 
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {

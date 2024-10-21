@@ -2,7 +2,6 @@
 #include <map>
 #include <string>
 #include <vector>
-
 #include "Engine/Rendering/Texture.h"
 
 struct TextureBuffer {

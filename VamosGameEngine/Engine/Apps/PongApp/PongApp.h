@@ -1,6 +1,6 @@
 ﻿#pragma once
-
 #include "Engine/Core/GameEngine.h"
+
 
 class PongApp : public GameEngine{
 public:
@@ -13,8 +13,8 @@ public:
 
 private:
     float maxSpeed = 0.02f;
-    SimpleMath::Vector3 speed = SimpleMath::Vector3(0.015f, 0.0f, 0.015f);
-    SimpleMath::Vector3 currentSpeed = speed;
+    DirectX::SimpleMath::Vector3 speed = DirectX::SimpleMath::Vector3(0.015f, 0.0f, 0.015f);
+    DirectX::SimpleMath::Vector3 currentSpeed = speed;
 
     GameObject* ball;
     GameObject* floor;

@@ -1,7 +1,6 @@
-﻿#include <iostream>
+﻿#include "Engine/Core/Engine.h"
 #include "InputDevice.h"
-#include "Engine/Core/Engine.h"
-
+#include <iostream>
 
 using namespace DirectX;
 

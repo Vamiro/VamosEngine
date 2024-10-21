@@ -1,20 +1,12 @@
 ﻿#pragma once
 #include <string>
 #include <vector>
-#include <ImGUI/imgui.h>
-#include <ImGUI/imgui_impl_dx11.h>
-#include <ImGUI/imgui_impl_win32.h>
-
-#include "SimpleMath.h"
-#include "Engine/Components/Component.h"
+#include <SimpleMath.h>
+#include "Engine/Utilities/ImGuiHelper.h"
 #include "Engine/Utilities/JsonUtil.h"
 
 class Component;
 class Transform;
-class ColliderComponent;
-class Model;
-
-using namespace DirectX;
 
 class GameObject {
 public:
@@ -24,8 +16,10 @@ public:
 
     virtual void Start();
     virtual void Update(float deltaTime);
-    void Render(const DirectX::SimpleMath::Matrix& viewMatrix, const DirectX::SimpleMath::Matrix& projectionMatrix);
+    void Render(const DirectX::SimpleMath::Matrix& viewMatrix, const DirectX::SimpleMath::Matrix& projectionMatrix,
+                DirectX::SimpleMath::Vector3 lightDirection);
     virtual void Destroy();
+    [[nodiscard]] int GetId() const { return id; }
 
     [[nodiscard]] bool IsVisible() const { return _isVisible; }
     void SetVisible(const bool visible) { _isVisible = visible; }
@@ -37,16 +31,11 @@ public:
 
 
     void AddComponent(Component* component){ _components.push_back(component); }
-    void DeleteComponent(Component* component)
-    {
-        component->Destroy();
-        std::erase(_components, component);
-    }
+    void DeleteComponent(Component* component);
     [[nodiscard]] std::vector<Component*> GetComponents() const { return _components; }
 
     void RenderComponentsGUI() const;
 
-    [[nodiscard]] int GetId() const { return id; }
 
     std::string name;
     Transform* transform;
@@ -63,7 +52,7 @@ protected:
 
 public:
     template<typename T>
-T* GetComponent()
+    T* GetComponent()
     {
         for (Component* component : _components)
         {

@@ -1,6 +1,5 @@
 #include "Model.h"
-
-#include <filesystem>
+#include "Engine/Utilities/ImGuiHelper.h"
 
 static ModelBuffer modelBuffer;
 bool Model::modelsLoaded = false;
@@ -72,22 +71,21 @@ void Model::RenderGUI()
     // }
 }
 
-void Model::Draw(const DirectX::SimpleMath::Matrix& worldMatrix, const DirectX::SimpleMath::Matrix& viewMatrix, const DirectX::SimpleMath::Matrix& projectionMatrix)
+void Model::Draw(const DirectX::SimpleMath::Matrix& worldMatrix, const DirectX::SimpleMath::Matrix& viewMatrix,
+    const DirectX::SimpleMath::Matrix& projectionMatrix, DirectX::SimpleMath::Vector3 lightDirection)
 {
     //Update Constant buffer with WVP Matrix
     this->cb_vs_vertexshader->data.world = worldMatrix.Transpose();
     this->cb_vs_vertexshader->data.cameraView = viewMatrix.Transpose();
     this->cb_vs_vertexshader->data.cameraProj = projectionMatrix.Transpose();
-    this->cb_vs_vertexshader->data.InvWorldView = worldMatrix.Invert().Transpose();
+    this->cb_vs_vertexshader->data.InvWorldView = worldMatrix.Invert();
     this->cb_vs_vertexshader->ApplyChanges(0);
     this->deviceContext->VSSetConstantBuffers(0, 1, this->cb_vs_vertexshader->GetAddressOf());
 
     // Update the pixel shader buffer with the color of the object
-    CB_PS_PixelShader psBufferData;
-    psBufferData.objectColor = color;
-    cb_ps_pixelshader->data = psBufferData;
+    this->cb_ps_pixelshader->data.objectColor = color;
+    this->cb_ps_pixelshader->data.lightDirection = lightDirection;
     cb_ps_pixelshader->ApplyChanges(0);
-
     this->deviceContext->PSSetConstantBuffers(1, 1, cb_ps_pixelshader->GetAddressOf());
 
     for (size_t i = 0; i < textures.size(); ++i)
@@ -157,7 +155,10 @@ void Model::SetModelPath(const std::string& filePath)
 bool Model::LoadModel()
 {
     Assimp::Importer importer;
-    const aiScene* pScene = importer.ReadFile(directory, aiProcess_Triangulate | aiProcess_ConvertToLeftHanded);
+    const aiScene* pScene = importer.ReadFile(directory,
+        aiProcess_Triangulate |
+        aiProcess_ConvertToLeftHanded );
+
     if (pScene == nullptr)
     {
         return false;
@@ -310,10 +311,14 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* Scene)
             vertex.texCoord.y = mesh->mTextureCoords[0][i].y;
         }
 
+        vertex.normal.x = mesh->mNormals[i].x;
+        vertex.normal.y = mesh->mNormals[i].y;
+        vertex.normal.z = mesh->mNormals[i].z;
+
         vertices.push_back(vertex);
     }
 
-    //Get indices
+    // Get indices
     for (UINT i = 0; i < mesh->mNumFaces; i++)
     {
         aiFace face = mesh->mFaces[i];

@@ -1,4 +1,5 @@
 #include "Camera.h"
+#include "Engine/Components/Transform.h"
 
 Camera::Camera() : GameObject("Camera", false)
 {

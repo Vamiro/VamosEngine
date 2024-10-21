@@ -1,11 +1,7 @@
 ﻿#pragma once
-
-#include <iostream>
-#include <ImGUI/imgui.h>
-#include "Component.h"
 #include <SimpleMath.h>
-
-using namespace DirectX;
+#include "Component.h"
+#include "Engine/Core/GameObject.h"
 
 class Transform : public Component
 {
@@ -22,63 +18,62 @@ public:
     void MarkDirty();
 
     // Локальные трансформации
-    const SimpleMath::Vector3& GetLocalPosition() const;
-    const SimpleMath::Quaternion& GetLocalRotation() const;
-    const SimpleMath::Vector3& GetLocalScale() const;
+    const DirectX::SimpleMath::Vector3& GetLocalPosition() const;
+    const DirectX::SimpleMath::Quaternion& GetLocalRotation() const;
+    const DirectX::SimpleMath::Vector3& GetLocalScale() const;
 
-    void SetLocalPosition(const SimpleMath::Vector3& pos);
-    void SetLocalRotation(const SimpleMath::Quaternion& rot);
-    void SetLocalScale(const SimpleMath::Vector3& scale);
+    void SetLocalPosition(const DirectX::SimpleMath::Vector3& pos);
+    void SetLocalRotation(const DirectX::SimpleMath::Quaternion& rot);
+    void SetLocalScale(const DirectX::SimpleMath::Vector3& scale);
 
     // Глобальные трансформации
-    SimpleMath::Vector3 GetGlobalPosition();
-    SimpleMath::Quaternion GetGlobalRotation();
-    SimpleMath::Vector3 GetGlobalScale();
+    DirectX::SimpleMath::Vector3 GetGlobalPosition();
+    DirectX::SimpleMath::Quaternion GetGlobalRotation();
+    DirectX::SimpleMath::Vector3 GetGlobalScale();
 
-    void SetGlobalPosition(const SimpleMath::Vector3& globalPos);
-    void SetGlobalRotation(const SimpleMath::Quaternion& globalRot);
-    void SetGlobalScale(const SimpleMath::Vector3& globalScale);
+    void SetGlobalPosition(const DirectX::SimpleMath::Vector3& globalPos);
+    void SetGlobalRotation(const DirectX::SimpleMath::Quaternion& globalRot);
+    void SetGlobalScale(const DirectX::SimpleMath::Vector3& globalScale);
 
-    void SetScale(const SimpleMath::Vector3& scl);
-    void SetRotation(const SimpleMath::Quaternion& quat);
-    void SetEulerRotate(const SimpleMath::Vector3& eulerAngle);
-    void AdjustPosition(const SimpleMath::Vector3& offset);
-    void AdjustScale(const SimpleMath::Vector3& scaleFactor);
-    void AdjustRotation(const SimpleMath::Vector3& eulerAngle);
+    void SetScale(const DirectX::SimpleMath::Vector3& scl);
+    void SetRotation(const DirectX::SimpleMath::Quaternion& quat);
+    void SetEulerRotate(const DirectX::SimpleMath::Vector3& eulerAngle);
+    void AdjustPosition(const DirectX::SimpleMath::Vector3& offset);
+    void AdjustScale(const DirectX::SimpleMath::Vector3& scaleFactor);
+    void AdjustRotation(const DirectX::SimpleMath::Vector3& eulerAngle);
     // Вращение и движение
-    void SetLookAtPos(const SimpleMath::Vector3& lookAtPos);
-    void RotateAround(const SimpleMath::Vector3& point, const SimpleMath::Quaternion& rotation);
-    void KeepDistance(const SimpleMath::Vector3& targetPosition, float distance);
+    void SetLookAtPos(const DirectX::SimpleMath::Vector3& lookAtPos);
+    void RotateAround(const DirectX::SimpleMath::Vector3& point, const DirectX::SimpleMath::Vector3& axis, const float angle);
+    void KeepDistance(const DirectX::SimpleMath::Vector3& targetPosition, float distance, float smooth = 0.0f);
 
     // Векторы направления
-    const SimpleMath::Vector3& GetForwardVector();
-    const SimpleMath::Vector3& GetRightVector();
-    const SimpleMath::Vector3& GetUpVector();
+    const DirectX::SimpleMath::Vector3& GetForwardVector();
+    const DirectX::SimpleMath::Vector3& GetRightVector();
+    const DirectX::SimpleMath::Vector3& GetUpVector();
 
     // Обновление и получение матриц
     void UpdateWorldMatrix();
-    const SimpleMath::Matrix& GetWorldMatrix();
-    void SetPosition(const SimpleMath::Vector3& pos);
+    const DirectX::SimpleMath::Matrix& GetWorldMatrix();
+    void SetPosition(const DirectX::SimpleMath::Vector3& pos);
 
-    const SimpleMath::Vector3 DEFAULT_FORWARD_VECTOR  = SimpleMath::Vector3(0.0f, 0.0f, 1.0f);
-    const SimpleMath::Vector3 DEFAULT_RIGHT_VECTOR = SimpleMath::Vector3(1.0f, 0.0f, 0.0f);
-    const SimpleMath::Vector3 DEFAULT_UP_VECTOR = SimpleMath::Vector3(0.0f, 1.0f, 0.0f);
+    const DirectX::SimpleMath::Vector3 DEFAULT_FORWARD_VECTOR  = DirectX::SimpleMath::Vector3(0.0f, 0.0f, 1.0f);
+    const DirectX::SimpleMath::Vector3 DEFAULT_RIGHT_VECTOR = DirectX::SimpleMath::Vector3(1.0f, 0.0f, 0.0f);
+    const DirectX::SimpleMath::Vector3 DEFAULT_UP_VECTOR = DirectX::SimpleMath::Vector3(0.0f, 1.0f, 0.0f);
 
     bool hasChanges = true;
 
 private:
     Transform* parentTransform;
-    SimpleMath::Matrix worldMatrix = SimpleMath::Matrix::Identity;
-    SimpleMath::Matrix localMatrix = SimpleMath::Matrix::Identity;
+    DirectX::SimpleMath::Matrix worldMatrix = DirectX::SimpleMath::Matrix::Identity;
+    DirectX::SimpleMath::Matrix localMatrix = DirectX::SimpleMath::Matrix::Identity;
 
-    SimpleMath::Vector3 position = SimpleMath::Vector3::Zero;
-    SimpleMath::Quaternion rotation = SimpleMath::Quaternion::Identity;
-    SimpleMath::Vector3 scale = SimpleMath::Vector3::One;
-    SimpleMath::Vector3 eulerAngles = SimpleMath::Vector3::Zero;
+    DirectX::SimpleMath::Vector3 position = DirectX::SimpleMath::Vector3::Zero;
+    DirectX::SimpleMath::Quaternion rotation = DirectX::SimpleMath::Quaternion::Identity;
+    DirectX::SimpleMath::Vector3 scale = DirectX::SimpleMath::Vector3::One;
+    DirectX::SimpleMath::Vector3 eulerAngles = DirectX::SimpleMath::Vector3::Zero;
 
     // Векторы направления
-
-    SimpleMath::Vector3 vec_forward;
-    SimpleMath::Vector3 vec_right;
-    SimpleMath::Vector3 vec_up;
+    DirectX::SimpleMath::Vector3 vec_forward;
+    DirectX::SimpleMath::Vector3 vec_right;
+    DirectX::SimpleMath::Vector3 vec_up;
 };

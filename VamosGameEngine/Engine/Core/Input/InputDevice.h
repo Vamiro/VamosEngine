@@ -1,8 +1,8 @@
 ﻿#pragma once
 
+#include <SimpleMath.h>
 #include <unordered_set>
 #include "Key.h"
-#include "SimpleMath.h"
 #include "Engine/Utilities/Delegate/Delegate.h"
 
 class Engine;
@@ -15,7 +15,9 @@ class InputDevice
 	std::unordered_set<InputKey>* keys_;
 
 public:
-	
+	InputDevice(Engine* engine);
+	~InputDevice();
+
 	struct MouseMoveEventArgs
 	{
 		DirectX::SimpleMath::Vector2 Position;
@@ -31,10 +33,8 @@ public:
 	MulticastDelegate<const MouseMoveEventArgs&>& OnMouseMove() { return onMouseMove_; }
 	MulticastDelegate<const InputKey&>& OnKeyDown() { return onKeyDown_; }
 	MulticastDelegate<const InputKey&>& OnKeyUp() { return onKeyUp_; }
-	
-	InputDevice(Engine* engine);
-	~InputDevice();
-	
+
+
 	void AddPressedKey(InputKey key);
 	void RemovePressedKey(InputKey key);
 	bool IsKeyDown(InputKey key);

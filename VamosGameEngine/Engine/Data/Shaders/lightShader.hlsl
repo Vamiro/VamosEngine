@@ -9,6 +9,7 @@ cbuffer cbVertexShader : register(b0)
 cbuffer cbPixelShader : register(b1)
 {
     float4 objectColor;
+    float3 lightDir;
 };
 
 struct VS_IN
@@ -36,7 +37,7 @@ PS_IN VSMain(VS_IN input)
     output.pos = mul(output.pos, cameraView);
     output.pos = mul(output.pos, cameraProj);
 
-    output.normal = normalize(mul(float4(input.normal, 0.0f), world).xyz);
+    output.normal = mul(float4(input.normal, 0.0f), InvWorldView);
 
     output.texCoord = input.texCoord;
     return output;
@@ -44,19 +45,17 @@ PS_IN VSMain(VS_IN input)
 
 float4 PSMain(PS_IN input) : SV_TARGET
 {
-    float4 texColor = tex.Sample(texSampler, input.texCoord);
+    float3 mNormal = normalize(input.normal);
+    float3 mLightColor = float3(1.0f, 1.0f, 0.95f);
+    float3 mLightDir = normalize(-lightDir);
 
-    float4 lightColor = float4(1.0f, 1.0f, 0.8f, 1.0f);
-    float3 lightDir = normalize(float3(0.5f, -1.0f, -0.5f));
-    float3 normal = normalize(input.normal);
+    float4 mTexColor = tex.Sample(texSampler, input.texCoord);
+    float3 diffuse = max(0, dot(mLightDir, mNormal)) * mTexColor;
 
     float ambientStrength = 0.1f;
-    float4 ambient = ambientStrength * lightColor;
+    float3 ambient = ambientStrength * mTexColor * objectColor;
 
-    float diff = max(dot(normal, -lightDir), 0.1f);
-    float4 diffuse = diff * lightColor;
-
-    float4 result = (ambient + diffuse) * texColor * objectColor;
+    float4 result = float4(ambient + diffuse * mLightColor,1.0f) * objectColor * mTexColor;
 
     return result;
 }

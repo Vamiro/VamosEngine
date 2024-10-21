@@ -1,21 +1,11 @@
 #pragma once
-#include <ImGUI/imgui.h>
-#include <ImGUI/imgui_impl_dx11.h>
-#include <ImGUI/imgui_impl_win32.h>
 #include <string>
-
 #include "Engine.h"
-#include "GameObject.h"
 #include "Engine/Graphics/ConstantBuffer.h"
 #include "Engine/Physics/PhysicsEngine.h"
 #include "Engine/Utilities/Timer.h"
-#include "Engine/Components/Model.h"
-
-struct Scene {
-    std::string name;
-    std::vector<GameObject*> objects;
-};
-
+#include "Engine/Core/GameObject.h"
+#include "Engine/Rendering/Camera.h"
 
 class GameEngine : public Engine {
 public:
@@ -29,7 +19,12 @@ public:
     void RenderGui() override;
     bool InitializeScene() override;
 
-    void SetCurrentCamera(Camera* camera) { currentCamera = camera; }
+    [[nodiscard]] static InputDevice& Input() { return *input_device_; }
+    [[nodiscard]] static Graphics& GetGraphics() { return *gfx_; }
+    [[nodiscard]] static JPH::BodyInterface& GetBodyInterface() { return *_bodyInterface; }
+
+    [[nodiscard]] static Camera* GetCurrentCamera() { return currentCamera; }
+    static void SetCurrentCamera(Camera* camera) { currentCamera = camera; }
 
 protected:
     Timer timer;
@@ -38,12 +33,12 @@ protected:
     ConstantBuffer<CB_VS_VertexShader> cb_vs_vertexshader;
     ConstantBuffer<CB_PS_PixelShader> cb_ps_pixelshader;
 
-    Camera* currentCamera;
+    static Camera* currentCamera;
     std::vector<GameObject*> gameObjects;
-    Scene currentScene;
     int currentGameObj = 0;
 
     PhysicsEngine* physicsEngine;
-    JPH::BodyInterface* _bodyInterface;
+    static JPH::BodyInterface* _bodyInterface;
+    DirectX::SimpleMath::Vector3 _lightDirection;
     void InitializePhysics();
 };

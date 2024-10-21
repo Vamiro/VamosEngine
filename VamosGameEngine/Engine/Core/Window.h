@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include <cstddef>
-
 #include "Engine/Utilities/ErrorLogger.h"
 
 class Engine;

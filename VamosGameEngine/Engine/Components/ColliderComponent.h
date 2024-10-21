@@ -1,8 +1,6 @@
 ﻿#pragma once
-
-#include "Component.h"
-#include "Delegate.h"
-#include "SimpleMath.h"
+#include "Transform.h"
+#include "Engine/Utilities/Delegate/Delegate.h"
 #include "Engine/Physics/PhysicsEngine.h"
 
 class ColliderComponent : public Component {

@@ -1,7 +1,6 @@
 #pragma once
-
-#include <ImGUI/imgui.h>
-
+#include <filesystem>
+#include <SimpleMath.h>
 #include "Component.h"
 #include "Engine/Rendering/Mesh.h"
 #include "ModelBuffer.h"
@@ -17,7 +16,8 @@ public:
     void Update(float deltaTime) override;
     void Destroy() override;
     void RenderGUI() override;
-    void Draw(const DirectX::SimpleMath::Matrix& worldMatrix, const DirectX::SimpleMath::Matrix& viewMatrix, const DirectX::SimpleMath::Matrix& projectionMatrix);
+    void Draw(const DirectX::SimpleMath::Matrix& worldMatrix, const DirectX::SimpleMath::Matrix& viewMatrix,
+        const DirectX::SimpleMath::Matrix& projectionMatrix, DirectX::SimpleMath::Vector3 lightDirection = DirectX::SimpleMath::Vector3(0.0f, 0.0f, 0.0f));
 
     void SetModelPath(const std::string& filePath);
     [[nodiscard]] std::string GetModelPath() const { return filePath; }
@@ -46,6 +46,7 @@ private:
 
     void ProcessNode(aiNode* node, const aiScene* Scene);
     Mesh ProcessMesh(aiMesh* mesh, const aiScene* Scene);
+    DirectX::SimpleMath::Vector3 CalculateNormal(aiMesh* mesh, UINT vertexIndex);
     std::vector<Texture> LoadMaterialTextures(aiMaterial* pMaterial, aiTextureType textureType, const aiScene* pScene);
     TextureStorageType DetermineTextureStorageType(const aiScene* pScene, aiMaterial* pMat, unsigned int index,
                                                    aiTextureType textureType);

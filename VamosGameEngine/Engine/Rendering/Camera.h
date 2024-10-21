@@ -1,6 +1,4 @@
 #pragma once
-#include "SimpleMath.h"
-#include "Engine/Components/Transform.h"
 #include "Engine/Core/GameObject.h"
 
 using namespace DirectX;

@@ -16,6 +16,7 @@ struct CB_VS_VertexShader
 struct CB_PS_PixelShader
 {
     DirectX::XMFLOAT4 objectColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+    DirectX::XMFLOAT3 lightDirection = { 0.0f, -1.0f, 1.0f };
 };
 
 template <class T>

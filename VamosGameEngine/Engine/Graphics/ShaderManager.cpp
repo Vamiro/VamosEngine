@@ -56,7 +56,7 @@ void ShaderManager::InitShader(ShaderData data)
 			vsBlob->GetBufferSize(),
 			nullptr, &inst.VShader);
 
-		if (inputLayout == nullptr) {
+		if (inputLayout ==	 nullptr) {
 			CreateInputLayoutDescFromVertexShaderSignature(vsBlob, _graphics->GetDevice().Get(), &inputLayout);
 		}
 		vsBlob->Release();

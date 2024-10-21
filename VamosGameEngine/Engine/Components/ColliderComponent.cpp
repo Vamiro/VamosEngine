@@ -1,8 +1,5 @@
 ﻿#include "ColliderComponent.h"
 
-#include "Transform.h"
-#include "Engine/Core/GameObject.h"
-
 ColliderComponent::ColliderComponent(GameObject& parent,
     JPH::BodyInterface& body_interface,
     JPH::EMotionType motionType,
@@ -58,19 +55,19 @@ void ColliderComponent::Update(float deltaTime)
         JPH::Vec3 pos{};
         JPH::Quat quat{};
         mBodyInterface.GetPositionAndRotation(mBodyID, pos, quat);
-        parent->transform->SetGlobalPosition(SimpleMath::Vector3(pos.GetX(), pos.GetY(), pos.GetZ()));
-        parent->transform->SetGlobalRotation(SimpleMath::Quaternion(quat.GetX(), quat.GetY(), quat.GetZ(), quat.GetW()));
+        parent->transform->SetGlobalPosition(DirectX::SimpleMath::Vector3(pos.GetX(), pos.GetY(), pos.GetZ()));
+        parent->transform->SetGlobalRotation(DirectX::SimpleMath::Quaternion(quat.GetX(), quat.GetY(), quat.GetZ(), quat.GetW()));
     } else if (mMotionType == JPH::EMotionType::Kinematic && mLayer == Layers::PLAYER) {
         MoveKinematic(parent->transform->GetGlobalPosition(), parent->transform->GetGlobalRotation(), deltaTime);
         JPH::Vec3 pos{};
         JPH::Quat quat{};
         mBodyInterface.GetPositionAndRotation(mBodyID, pos, quat);
-        parent->transform->SetGlobalPosition(SimpleMath::Vector3(pos.GetX(), pos.GetY(), pos.GetZ()));
-        parent->transform->SetGlobalRotation(SimpleMath::Quaternion(quat.GetX(), quat.GetY(), quat.GetZ(), quat.GetW()));
+        parent->transform->SetGlobalPosition(DirectX::SimpleMath::Vector3(pos.GetX(), pos.GetY(), pos.GetZ()));
+        parent->transform->SetGlobalRotation(DirectX::SimpleMath::Quaternion(quat.GetX(), quat.GetY(), quat.GetZ(), quat.GetW()));
     }
 }
 
-void ColliderComponent::MoveKinematic(const SimpleMath::Vector3& position, const SimpleMath::Quaternion& rotation, float deltaTime) const
+void ColliderComponent::MoveKinematic(const DirectX::SimpleMath::Vector3& position, const DirectX::SimpleMath::Quaternion& rotation, float deltaTime) const
 {
     mBodyInterface.MoveKinematic(
         mBodyID,
@@ -122,7 +119,7 @@ void ColliderComponent::RenderGUI() {
     {
         ImGui::DragFloat3("Scale", scale, 0.1f, 0.1f, 10000.0f);
         if (ImGui::IsMouseDragging(0) && ImGui::IsItemActive()) {
-            SetScale(SimpleMath::Vector3(scale[0], scale[1], scale[2]));
+            SetScale(DirectX::SimpleMath::Vector3(scale[0], scale[1], scale[2]));
         }
     }
 }
@@ -140,11 +137,11 @@ void ColliderComponent::SetShape(JPH::Shape* newShape) {
     mShape = newShape;
 }
 
-SimpleMath::Vector3 ColliderComponent::GetScale() const {
+DirectX::SimpleMath::Vector3 ColliderComponent::GetScale() const {
     return {mScale.GetX(), mScale.GetY(), mScale.GetZ()};
 }
 
-void ColliderComponent::SetScale(const SimpleMath::Vector3& scale) {
+void ColliderComponent::SetScale(const DirectX::SimpleMath::Vector3& scale) {
     mScale = JPH::Vec3(scale.x, scale.y, scale.z);
     auto newShape = mShape->ScaleShape(mScale);
     mBodyInterface.SetShape(mBodyID, newShape.Get(), true , JPH::EActivation::Activate);
@@ -160,25 +157,25 @@ JPH::BodyID ColliderComponent::GetID() const {
     return mBodyID;
 }
 
-SimpleMath::Vector3 ColliderComponent::GetPosition() const {
+DirectX::SimpleMath::Vector3 ColliderComponent::GetPosition() const {
     const JPH::Vec3 pos = mBodyInterface.GetPosition(mBodyID);
     return {pos.GetX(), pos.GetY(), pos.GetZ()};
 }
 
-SimpleMath::Quaternion ColliderComponent::GetRotation() const {
+DirectX::SimpleMath::Quaternion ColliderComponent::GetRotation() const {
     const JPH::Quat quat = mBodyInterface.GetRotation(mBodyID);
     return {quat.GetX(), quat.GetY(), quat.GetZ(), quat.GetW()};
 }
 
-SimpleMath::Vector3 ColliderComponent::GetPositionOffset() const {
+DirectX::SimpleMath::Vector3 ColliderComponent::GetPositionOffset() const {
     return {mPositionOffset.GetX(), mPositionOffset.GetY(), mPositionOffset.GetZ()};
 }
 
-SimpleMath::Quaternion ColliderComponent::GetRotationOffset() const {
+DirectX::SimpleMath::Quaternion ColliderComponent::GetRotationOffset() const {
     return {mRotationOffset.GetX(), mRotationOffset.GetY(), mRotationOffset.GetZ(), mRotationOffset.GetW()};
 }
 
-void ColliderComponent::SetPositionAndRotation(const SimpleMath::Vector3& position, const SimpleMath::Quaternion& rotation) const
+void ColliderComponent::SetPositionAndRotation(const DirectX::SimpleMath::Vector3& position, const DirectX::SimpleMath::Quaternion& rotation) const
 {
     mBodyInterface.SetPositionAndRotation(mBodyID,
         JPH::Vec3(position.x, position.y, position.z),
@@ -186,14 +183,14 @@ void ColliderComponent::SetPositionAndRotation(const SimpleMath::Vector3& positi
         JPH::EActivation::Activate);
 }
 
-void ColliderComponent::SetPosition(const SimpleMath::Vector3& position) const
+void ColliderComponent::SetPosition(const DirectX::SimpleMath::Vector3& position) const
 {
     mBodyInterface.SetPosition(mBodyID,
         JPH::Vec3(position.x, position.y, position.z), JPH::EActivation::Activate);
 
 }
 
-void ColliderComponent::SetRotation(const SimpleMath::Quaternion& rotation) const
+void ColliderComponent::SetRotation(const DirectX::SimpleMath::Quaternion& rotation) const
 {
     mBodyInterface.SetRotation(mBodyID,
         JPH::Quat(rotation.x, rotation.y, rotation.z, rotation.w), JPH::EActivation::Activate);

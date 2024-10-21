@@ -11,6 +11,7 @@ public:
     virtual void Start() = 0;
     virtual void Update(float deltaTime) = 0;
     virtual void RenderGUI() = 0;
+
     virtual void Destroy() = 0;
 
     const char* GetName() const { return name_; }
