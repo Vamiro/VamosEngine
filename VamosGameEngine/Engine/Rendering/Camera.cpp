@@ -11,18 +11,34 @@ void Camera::Destroy()
     delete transform;
 }
 
+void Camera::UpdateProjectionMatrix()
+{
+    if (_type & PERSPECTIVE)
+    {
+        this->projectionMatrix = SimpleMath::Matrix::CreatePerspectiveFieldOfView(_fovRadians, _aspectRatio, _nearZ, _farZ);
+    }
+    else if (_type & ORTHOGRAPHIC)
+    {
+        this->projectionMatrix = SimpleMath::Matrix::CreateOrthographic(_fovDegrees, _fovDegrees / _aspectRatio, _nearZ, _farZ);
+    }
+}
+
 void Camera::SetProjectionValues(float fovDegrees, float aspectRatio, float nearZ, float farZ, ProjectionType type)
 {
-    float fovRadians = XMConvertToRadians(fovDegrees);
+    _fovRadians = XMConvertToRadians(fovDegrees);
+    _fovDegrees = fovDegrees;
+    _aspectRatio = aspectRatio;
+    _nearZ = nearZ;
+    _farZ = farZ;
+    _type = type;
 
-    if (type & PERSPECTIVE)
-    {
-        this->projectionMatrix = SimpleMath::Matrix::CreatePerspectiveFieldOfView(fovRadians, aspectRatio, nearZ, farZ);
-    }
-    else if (type & ORTHOGRAPHIC)
-    {
-        this->projectionMatrix = SimpleMath::Matrix::CreateOrthographic(fovDegrees, fovDegrees / aspectRatio, nearZ, farZ);
-    }
+    UpdateProjectionMatrix();
+}
+
+void Camera::SetProjectionValues(float aspectRatio)
+{
+    _aspectRatio = aspectRatio;
+    UpdateProjectionMatrix();
 }
 
 const SimpleMath::Matrix& Camera::GetViewMatrix() const

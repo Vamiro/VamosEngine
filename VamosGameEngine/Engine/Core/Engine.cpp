@@ -1,13 +1,14 @@
 ﻿#include "Engine.h"
 
 InputDevice* Engine::input_device_ = nullptr;
-
+Camera* Engine::currentCamera = nullptr;
 Graphics* Engine::gfx_ = nullptr;
 
 Engine::Engine()
 {
     input_device_ = new InputDevice(this);
     gfx_ = new Graphics(this);
+    currentCamera = new Camera();
 }
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -23,6 +24,53 @@ LRESULT Engine::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         isClosed = true;
         return 0;
     }
+    case WM_SIZE:
+        if (wParam == SIZE_MINIMIZED)
+        {
+            // The window was minimized (you should probably suspend the application)
+            if (!s_minimized)
+            {
+                s_minimized = true;
+            }
+        }
+        else if (s_minimized)
+        {
+            // The window was minimized and is now restored (resume from suspend)
+            s_minimized = false;
+        }
+        else if ( !s_in_sizemove )
+        {
+            RECT rect;
+            if (GetClientRect(hWnd, &rect))
+            {
+                gfx_->OnResize(rect.right - rect.left, rect.bottom - rect.top);
+            }
+        }
+        break;
+
+    case WM_ENTERSIZEMOVE:
+        // We want to avoid trying to resizing the swapchain as the user does the 'rubber band' resize
+        s_in_sizemove = true;
+        break;
+
+    case WM_EXITSIZEMOVE:
+        s_in_sizemove = false;
+        // Here is the other place where you handle the swapchain resize after the user stops using the 'rubber-band'
+        RECT rect;
+        if (GetClientRect(hWnd, &rect))
+        {
+            gfx_->OnResize(rect.right - rect.left, rect.bottom - rect.top);
+        }
+        break;
+
+    case WM_GETMINMAXINFO:
+        {
+            // We want to prevent the window from being set too tiny
+            auto info = reinterpret_cast<MINMAXINFO*>(lParam);
+            info->ptMinTrackSize.x = 320;
+            info->ptMinTrackSize.y = 200;
+        }
+        break;
     case WM_ACTIVATE: {
             if (LOWORD(wParam) == WA_INACTIVE) {
                 isFocused = false;

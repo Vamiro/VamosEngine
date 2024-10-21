@@ -27,20 +27,20 @@ bool Window::Initialize(Engine* pEngine, HINSTANCE hInstance, std::string window
     wr.bottom = wr.top + this->height;
     AdjustWindowRect(&wr, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE);
 
+    DWORD style = WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX;
+
     this->handle = CreateWindowEx(
-        0,
+        WS_EX_APPWINDOW,
         //Extended Windows style - we are using the default. For other options, see: https://msdn.microsoft.com/en-us/library/windows/desktop/ff700543(v=vs.85).aspx
         this->window_class_wide.c_str(), //Window class name
         this->window_title_wide.c_str(), //Window Title
-        WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU,
-        //Windows style - See: https://msdn.microsoft.com/en-us/library/windows/desktop/ms632600(v=vs.85).aspx
+        style, //Window style
         wr.left, //Window X Position
         wr.top, //Window Y Position
         wr.right - wr.left, //Window Width
         wr.bottom - wr.top, //Window Height
         NULL, //Handle to parent of this window. Since this is the first window, it has no parent window.
-        NULL,
-        //Handle to menu or child window identifier. Can be set to NULL and use menu in WindowClassEx if a menu is desired to be used.
+        NULL, //Handle to menu or child window identifier. Can be set to NULL and use menu in WindowClassEx if a menu is desired to be used.
         this->hInstance, //Handle to the instance of module to be used with this window
         pEngine); //Param to create window
 

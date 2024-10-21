@@ -1,6 +1,6 @@
 #include "GameEngine.h"
 
-Camera* GameEngine::currentCamera = nullptr;
+
 JPH::BodyInterface* GameEngine::_bodyInterface = nullptr;
 
 GameEngine::GameEngine(): physicsEngine(nullptr)
@@ -80,6 +80,7 @@ void GameEngine::RenderFrame()
     float bgcolor[] = {0.5f, 0.5f, 0.5f, 1.0f};
     gfx_->GetDeviceContext()->ClearRenderTargetView(gfx_->GetRenderTargetView().Get(), bgcolor);
     gfx_->GetDeviceContext()->ClearDepthStencilView(gfx_->GetDepthStencilView().Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
     gfx_->GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     gfx_->GetDeviceContext()->RSSetState(gfx_->GetRasterizerState().Get());
     gfx_->GetDeviceContext()->OMSetDepthStencilState(gfx_->GetDepthStencilState().Get(), 0);
@@ -94,7 +95,14 @@ void GameEngine::RenderFrame()
             gameObject->Render(currentCamera->GetViewMatrix(), currentCamera->GetProjectionMatrix(), _lightDirection);
     }
 
+    ImGui_ImplDX11_NewFrame();
+    ImGui_ImplWin32_NewFrame();
+    ImGui::NewFrame();
+
     RenderGui();
+
+    ImGui::Render();
+    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
     gfx_->RenderFrame();
 }

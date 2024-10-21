@@ -14,7 +14,9 @@ class Camera : public GameObject
 public:
     Camera();
     void Destroy() override;
+    void UpdateProjectionMatrix();
     void SetProjectionValues(float FOV, float aspectRatio, float nearZ, float farZ, ProjectionType type);
+    void SetProjectionValues(float aspectRatio);
 
     [[nodiscard]] const SimpleMath::Matrix& GetViewMatrix() const;
     [[nodiscard]] const SimpleMath::Matrix& GetProjectionMatrix() const;
@@ -25,4 +27,10 @@ private:
     SimpleMath::Vector3 camTarget{};
     SimpleMath::Matrix viewMatrix{};
     SimpleMath::Matrix projectionMatrix{};
+    float _fovRadians;
+    float _fovDegrees;
+    float _aspectRatio;
+    float _nearZ;
+    float _farZ;
+    ProjectionType _type;
 };

@@ -1,5 +1,7 @@
 #include "Graphics.h"
 
+#include "Engine/Core/Engine.h"
+
 
 Graphics::~Graphics()
 {
@@ -25,7 +27,86 @@ bool Graphics::Initialize(HWND hwnd, int width, int height)
 
 void Graphics::RenderFrame() const
 {
+
     this->swapChain->Present(0, NULL);
+}
+
+void Graphics::OnResize(int width, int height)
+{
+    if (!deviceContext || !device || !swapChain) return;
+
+    // Unbind the render target and depth/stencil buffer
+    deviceContext->OMSetRenderTargets(0, nullptr, nullptr);
+
+    // Release the render target view and depth/stencil view
+    renderTargetView.Reset();
+    depthStencilView.Reset();
+
+    // Flush the device context
+    deviceContext->Flush();
+
+    // Resize the swap chain buffers
+    HRESULT hr = swapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
+    if (FAILED(hr))
+    {
+        if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
+        {
+            // Handle device removed/reset
+            // You might need to recreate the device and swap chain here
+            return;
+        }
+        else
+        {
+            // Handle other errors
+            ErrorLogger::Log(hr, "Failed to resize swap chain buffers.");
+            return;
+        }
+    }
+
+    // Recreate the render target view
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> backBuffer;
+    hr = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), &backBuffer);
+    ErrorLogger::Log(hr, "Failed to get back buffer.");
+
+    hr = device->CreateRenderTargetView(backBuffer.Get(), nullptr, renderTargetView.GetAddressOf());
+    ErrorLogger::Log(hr, "Failed to create render target view.");
+
+    // Recreate the depth/stencil view
+    D3D11_TEXTURE2D_DESC depthStencilDesc = {};
+    depthStencilDesc.Width = width;
+    depthStencilDesc.Height = height;
+    depthStencilDesc.MipLevels = 1;
+    depthStencilDesc.ArraySize = 1;
+    depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    depthStencilDesc.SampleDesc.Count = 1;
+    depthStencilDesc.SampleDesc.Quality = 0;
+    depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
+    depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+    depthStencilDesc.CPUAccessFlags = 0;
+    depthStencilDesc.MiscFlags = 0;
+
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> depthStencilBuffer;
+    hr = device->CreateTexture2D(&depthStencilDesc, nullptr, depthStencilBuffer.GetAddressOf());
+    ErrorLogger::Log(hr, "Failed to create depth/stencil buffer.");
+
+
+    hr = device->CreateDepthStencilView(depthStencilBuffer.Get(), nullptr, depthStencilView.GetAddressOf());
+    ErrorLogger::Log(hr, "Failed to create depth/stencil view.");
+
+    // Bind the render target view and depth/stencil view
+    deviceContext->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
+
+    // Reset the viewport size
+    D3D11_VIEWPORT viewport = {};
+    viewport.TopLeftX = 0;
+    viewport.TopLeftY = 0;
+    viewport.Width = static_cast<float>(width);
+    viewport.Height = static_cast<float>(height);
+    viewport.MinDepth = 0.0f;
+    viewport.MaxDepth = 1.0f;
+    deviceContext->RSSetViewports(1, &viewport);
+
+    Engine::GetCurrentCamera()->SetProjectionValues( static_cast<float>(width) / static_cast<float>(height));
 }
 
 bool Graphics::InitializeDirectX(HWND hwnd)

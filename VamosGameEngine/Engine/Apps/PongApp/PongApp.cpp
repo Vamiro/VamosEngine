@@ -32,10 +32,6 @@ void PongApp::Update()
 
 void PongApp::RenderGui()
 {
-    ImGui_ImplDX11_NewFrame();
-    ImGui_ImplWin32_NewFrame();
-    ImGui::NewFrame();
-
     ImGui::Begin("GUI");
     ImGui::Text("FPS: %.2f", ImGui::GetIO().Framerate);
 
@@ -101,12 +97,7 @@ void PongApp::RenderGui()
 
         ImGui::EndPopup();
     }
-
-
     ImGui::End();
-
-    ImGui::Render();
-    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
 
 void PongApp::AddComponentToObject(GameObject* obj, const std::string& component_name)
@@ -129,13 +120,11 @@ bool PongApp::InitializeScene()
         hr = cb_ps_pixelshader.Initialize(d3d_device.Get(), d3d_device_context.Get());
         ErrorLogger::Log(hr, "Failed to create pixelshader constant buffer.");
 
-        auto* camera = new Camera();
-        camera->transform->SetGlobalPosition(DirectX::SimpleMath::Vector3(0.0f, 10.0f, -10.0f));
-        camera->transform->SetEulerRotate(DirectX::SimpleMath::Vector3(0.0f, 45.0f, 0.0f));
-        camera->SetProjectionValues(90.0f, static_cast<float>(gfx_->GetWindowWidth()) / static_cast<float>(gfx_->GetWindowHeight()), 0.1f,
+        currentCamera->transform->SetGlobalPosition(DirectX::SimpleMath::Vector3(0.0f, 10.0f, -10.0f));
+        currentCamera->transform->SetEulerRotate(DirectX::SimpleMath::Vector3(0.0f, 45.0f, 0.0f));
+        currentCamera->SetProjectionValues(90.0f, static_cast<float>(gfx_->GetWindowWidth()) / static_cast<float>(gfx_->GetWindowHeight()), 0.1f,
                                    1000.0f, PERSPECTIVE);
-        gameObjects.emplace_back(camera);
-        SetCurrentCamera(camera);
+        gameObjects.emplace_back(currentCamera);
 
         ball = gameObjects.emplace_back(new GameObject("Ball"));
         ball->transform->SetGlobalPosition(DirectX::SimpleMath::Vector3(0.0f, 10.0f, -30.0f));
@@ -145,7 +134,7 @@ bool PongApp::InitializeScene()
         auto* c = new ColliderComponent(*ball, *_bodyInterface, JPH::EMotionType::Dynamic, Layers::PLAYER);
         c->SetShape(new JPH::SphereShape(1.0f));
         ball->AddComponent(c);
-        ball->AddComponent(new FollowCamera(*ball, *camera->transform));
+        ball->AddComponent(new FollowCamera(*ball, *currentCamera->transform));
         ball->AddComponent(new BallComponent(*ball));
 
         for (auto i = -5; i <= 5; ++i)
