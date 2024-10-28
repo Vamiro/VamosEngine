@@ -128,14 +128,13 @@ bool PongApp::InitializeScene()
 
         ball = gameObjects.emplace_back(new GameObject("Ball"));
         ball->transform->SetGlobalPosition(DirectX::SimpleMath::Vector3(0.0f, 10.0f, -30.0f));
+        ball->AddComponent(new FollowCamera(*ball, *currentCamera->transform));
+        ball->AddComponent(new BallComponent(*ball));
         ball->AddComponent(new Model(*ball, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
         ball->GetComponent<Model>()->SetModelPath("Data\\Objects\\sphere.obj");
         ball->GetComponent<Model>()->SetColor({0.0f, 0.0f, 1.0f, 1.0f});
-        auto* c = new ColliderComponent(*ball, *_bodyInterface, JPH::EMotionType::Dynamic, Layers::PLAYER);
-        c->SetShape(new JPH::SphereShape(1.0f));
+        auto* c = new ColliderComponent(*ball, new JPH::SphereShape(1.0f), {1.0f, 1.0f, 1.0f}, JPH::EMotionType::Dynamic, Layers::PLAYER);
         ball->AddComponent(c);
-        ball->AddComponent(new FollowCamera(*ball, *currentCamera->transform));
-        ball->AddComponent(new BallComponent(*ball));
 
         for (auto i = -5; i <= 5; ++i)
         {
@@ -152,8 +151,7 @@ bool PongApp::InitializeScene()
                 float b = 1.0f - r;
                 boo->GetComponent<Model>()->SetColor({r, g, b, 1.0f});
 
-                c = new ColliderComponent(*boo, *_bodyInterface, JPH::EMotionType::Static, Layers::NON_MOVING, true, true);
-                c->SetShape(new JPH::SphereShape(1.0f));
+                c = new ColliderComponent(*boo, new JPH::SphereShape(1.0f), {1.0f, 1.0f, 1.0f}, JPH::EMotionType::Static, Layers::NON_MOVING, true, true);
                 boo->AddComponent(c);
             }
         }
@@ -162,8 +160,7 @@ bool PongApp::InitializeScene()
         floor->AddComponent(new Model(*floor, d3d_device.Get(), d3d_device_context.Get(), cb_vs_vertexshader, cb_ps_pixelshader));
         floor->GetComponent<Model>()->SetModelPath("Data\\Objects\\box.obj");
         floor->transform->SetGlobalScale({100.0f, 1.0f, 100.0f});
-        c = new ColliderComponent(*floor, *_bodyInterface, JPH::EMotionType::Static, Layers::NON_MOVING);
-        c->SetShape(new JPH::BoxShape(JPH::Vec3(200.0f, 1.0f, 200.0f)));
+        c = new ColliderComponent(*floor, new JPH::BoxShape({1.0f, 1.0f, 1.0f}));
         floor->AddComponent(c);
     }
     catch (COMException& exception)

@@ -1,9 +1,6 @@
 #include "GameEngine.h"
 
-
-JPH::BodyInterface* GameEngine::_bodyInterface = nullptr;
-
-GameEngine::GameEngine(): physicsEngine(nullptr)
+GameEngine::GameEngine()
 {
     _lightDirection = DirectX::SimpleMath::Vector3(0.0f, -1.0f, 1.0f);
 }
@@ -28,6 +25,8 @@ bool GameEngine::Start(HINSTANCE hInstance, std::string window_title, std::strin
         return false;
 
     InitializePhysics();
+
+    this->debugRenderSys->Initialize();
 
     if (!this->InitializeScene())
         return false;
@@ -56,12 +55,19 @@ void GameEngine::Update()
         gameObject->Update(deltaTime);
     }
 
-    if (this->gfx_->blockInputForImGui || isPaused)
+    if (gfx_->blockInputForImGui || isPaused)
     {
         return;
     }
+}
 
+void GameEngine::UpdatePhysics()
+{
     physicsEngine->UpdatePhysics(deltaTime);
+    for (const auto gameObject : gameObjects)
+    {
+        gameObject->UpdatePhysics(deltaTime);
+    }
 }
 
 void GameEngine::InitializePhysics()
@@ -94,6 +100,9 @@ void GameEngine::RenderFrame()
         if(gameObject->IsVisible())
             gameObject->Render(currentCamera->GetViewMatrix(), currentCamera->GetProjectionMatrix(), _lightDirection);
     }
+
+    debugRenderSys->Draw();
+    debugRenderSys->Clear();
 
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();

@@ -16,9 +16,9 @@ public:
     void Update(float deltaTime) override;
     void RenderGUI() override;
 
-    void Destroy() override
-    {
-    }
+    void Destroy() override {}
+
+    void OnCollisionEnter(ColliderComponent* other) override;
 
 private:
     ColliderComponent* colliderComponent = nullptr;

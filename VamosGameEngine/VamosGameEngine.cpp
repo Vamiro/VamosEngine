@@ -11,9 +11,10 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     {
         while (!game.IsClosed())
         {
+            game.RenderFrame();
             if (!game.ProcessMessages()) ErrorLogger::Log("Failed to process messages.");
             game.Update();
-            game.RenderFrame();
+            game.UpdatePhysics();
         }
     }
 

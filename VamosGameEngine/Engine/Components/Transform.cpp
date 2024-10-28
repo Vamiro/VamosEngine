@@ -29,39 +29,46 @@ void Transform::RenderGUI()
                                                                        DirectX::XMConvertToRadians(eulerAngles.x),
                                                                        DirectX::XMConvertToRadians(eulerAngles.z)));;
 
-    if (auto* cc = this->parent->GetComponent<ColliderComponent>()) {
-        if (ImGui::IsMouseDragging(0) && it) {
-            cc->SetActivation(false); // Deactivate physics
-            cc->SetPositionAndRotation(this->position, this->rotation);
-        } else
-        {
-            cc->SetActivation(true); // Activate physics
-        }
-    }
+    // if (auto* cc = this->parent->GetComponent<ColliderComponent>()) {
+    //     if (ImGui::IsMouseDragging(0) && it) {
+    //         cc->SetActivation(false); // Deactivate physics
+    //         cc->SetPositionAndRotation(this->position, this->rotation);
+    //         cc->UpdateScale();
+    //     } else if (cc->IsActive())
+    //     {
+    //         cc->SetActivation(true); // Activate physics
+    //     }
+    // }
 }
 
 void Transform::SetParent(Transform* newParent)
 {
     if (parentTransform == newParent) return;
 
-    DirectX::SimpleMath::Vector3 globalPosition = GetGlobalPosition();
-    DirectX::SimpleMath::Quaternion globalRotation = GetGlobalRotation();
-    DirectX::SimpleMath::Vector3 globalScale = GetGlobalScale();
+    const DirectX::SimpleMath::Vector3 position = GetGlobalPosition();
+    const DirectX::SimpleMath::Quaternion rotation = GetGlobalRotation();
+    const DirectX::SimpleMath::Vector3 scale = GetGlobalScale();
 
     parentTransform = newParent;
 
-    SetGlobalPosition(globalPosition);
-    SetGlobalRotation(globalRotation);
-    SetGlobalScale(globalScale);
+    SetGlobalPosition(position);
+    SetGlobalRotation(rotation);
+    SetGlobalScale(scale);
 }
 
 void Transform::MarkDirty()
 {
     hasChanges = true;
+    for (auto& child : parent->GetChildren())
+    {
+        child->transform->MarkDirty();
+    }
 }
 
 void Transform::UpdateWorldMatrix()
 {
+    if (!hasChanges) return;
+
     rotation.Normalize();
     eulerAngles = rotation.ToEuler();
     eulerAngles = DirectX::SimpleMath::Vector3(DirectX::XMConvertToDegrees(eulerAngles.x),
@@ -72,10 +79,12 @@ void Transform::UpdateWorldMatrix()
     const DirectX::SimpleMath::Matrix scaleMatrix = DirectX::SimpleMath::Matrix::CreateScale(scale);
     const DirectX::SimpleMath::Matrix rotationMatrix = DirectX::SimpleMath::Matrix::CreateFromQuaternion(rotation);
     const DirectX::SimpleMath::Matrix translationMatrix = DirectX::SimpleMath::Matrix::CreateTranslation(position);
+
     localMatrix = scaleMatrix * rotationMatrix * translationMatrix;
 
     if (parentTransform)
     {
+
         worldMatrix = localMatrix * parentTransform->GetWorldMatrix();
     }
     else

@@ -5,22 +5,30 @@
 
 class ColliderComponent : public Component {
 public:
-    ColliderComponent(GameObject& parent, JPH::BodyInterface& body_interface,
-    JPH::EMotionType motionType, JPH::ObjectLayer layer, bool allowSleeping = true,
-                                 bool isTrigger = false);
+    ColliderComponent(GameObject& parent,
+                        JPH::Shape* shape,
+                        DirectX::SimpleMath::Vector3 scale = DirectX::SimpleMath::Vector3(1.0f, 1.0f, 1.0f),
+                        JPH::EMotionType motionType = JPH::EMotionType::Static,
+                        JPH::ObjectLayer layer = Layers::NON_MOVING,
+                        bool allowSleeping = true,
+                        bool isTrigger = false);
+
     ~ColliderComponent();
 
     void Start() override;
     void Update(float deltaTime) override;
+    void UpdatePhysics(float deltaTime);
     void MoveKinematic(const DirectX::SimpleMath::Vector3& position, const DirectX::SimpleMath::Quaternion& rotation,
                        float deltaTime) const;
+    DirectX::SimpleMath::Matrix GetColliderTransform();
     void RenderGUI() override;
-    void SetActivation(bool active) const;
+    void SetActivation(bool active);
 
-    void SetShape(JPH::Shape* shape);
     [[nodiscard]] DirectX::SimpleMath::Vector3 GetScale() const;
+    JPH::Vec3 CalcScale() const;
     void SetScale(const DirectX::SimpleMath::Vector3& scale);
     void SetScale(float radius);
+    void UpdateScale();
     [[nodiscard]] JPH::BodyID GetID() const;
     [[nodiscard]] DirectX::SimpleMath::Vector3 GetPosition() const;
     [[nodiscard]] DirectX::SimpleMath::Quaternion GetRotation() const;
@@ -34,6 +42,8 @@ public:
 
     Delegate<void, ColliderComponent*>& OnCollision() { return onCollision_; }
     void Destroy() override;
+    void SetTrigger(bool isTrigger);
+    bool IsActive() const { return isActive; }
 
 private:
     bool DestroyFlag = false;
@@ -42,7 +52,6 @@ private:
     JPH::BodyID mBodyID;
     JPH::Shape* mShape;
     JPH::BodyCreationSettings mSettings;
-    JPH::BodyInterface& mBodyInterface;
 
     JPH::Vec3 mPositionOffset = JPH::Vec3::sZero();
     JPH::Quat mRotationOffset = JPH::Quat::sIdentity();
@@ -51,4 +60,5 @@ private:
     JPH::ObjectLayer mLayer;
     bool mAllowSleeping;
     bool mIsTrigger;
+    bool isActive;
 };

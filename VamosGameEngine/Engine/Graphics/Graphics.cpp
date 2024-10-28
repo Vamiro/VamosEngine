@@ -31,6 +31,11 @@ void Graphics::RenderFrame() const
     this->swapChain->Present(0, NULL);
 }
 
+void Graphics::RestoreTargets()
+{
+    deviceContext->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
+}
+
 void Graphics::OnResize(int width, int height)
 {
     if (!deviceContext || !device || !swapChain) return;
@@ -94,7 +99,7 @@ void Graphics::OnResize(int width, int height)
     ErrorLogger::Log(hr, "Failed to create depth/stencil view.");
 
     // Bind the render target view and depth/stencil view
-    deviceContext->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
+    RestoreTargets();
 
     // Reset the viewport size
     D3D11_VIEWPORT viewport = {};

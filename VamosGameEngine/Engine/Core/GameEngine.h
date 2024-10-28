@@ -2,7 +2,6 @@
 #include <string>
 #include "Engine.h"
 #include "Engine/Graphics/ConstantBuffer.h"
-#include "Engine/Physics/PhysicsEngine.h"
 #include "Engine/Utilities/Timer.h"
 #include "Engine/Core/GameObject.h"
 
@@ -13,14 +12,10 @@ public:
     bool Start(HINSTANCE hInstance, std::string window_title, std::string window_class, int width, int height) override;
     bool ProcessMessages() override;
     void Update() override;
-    void UpdatePhysics(float deltaTime);
+    void UpdatePhysics();
     void RenderFrame() override;
     void RenderGui() override;
     bool InitializeScene() override;
-
-    [[nodiscard]] static InputDevice& Input() { return *input_device_; }
-    [[nodiscard]] static Graphics& GetGraphics() { return *gfx_; }
-    [[nodiscard]] static JPH::BodyInterface& GetBodyInterface() { return *_bodyInterface; }
 
 protected:
     Timer timer;
@@ -32,8 +27,6 @@ protected:
     std::vector<GameObject*> gameObjects;
     int currentGameObj = 0;
 
-    PhysicsEngine* physicsEngine;
-    static JPH::BodyInterface* _bodyInterface;
     DirectX::SimpleMath::Vector3 _lightDirection;
     void InitializePhysics();
 };

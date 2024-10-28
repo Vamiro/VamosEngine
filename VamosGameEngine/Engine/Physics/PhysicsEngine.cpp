@@ -5,6 +5,7 @@
 
 #include "Delegate.h"
 #include "Engine/Components/ColliderComponent.h"
+#include "Engine/Core/Engine.h"
 
 
 static void TraceImpl(const char *inFMT, ...)
@@ -136,6 +137,9 @@ void MyBodyActivationListener::OnBodyDeactivated(const JPH::BodyID &inBodyID, JP
 
 void MyDebugRenderer::DrawLine(JPH::RVec3Arg inFrom, JPH::RVec3Arg inTo, JPH::ColorArg inColor)
 {
+    Engine::GetDebugRenderSys().DrawLine({inFrom.GetX(), inFrom.GetY(), inFrom.GetZ()},
+        {inTo.GetX(), inTo.GetY(), inTo.GetZ()},
+        {static_cast<float>(inColor.r), static_cast<float>(inColor.g), static_cast<float>(inColor.b), static_cast<float>(inColor.a)});
 }
 
 void MyDebugRenderer::DrawTriangle(JPH::RVec3Arg inV1, JPH::RVec3Arg inV2, JPH::RVec3Arg inV3, JPH::ColorArg inColor,
@@ -165,7 +169,7 @@ void MyDebugRenderer::DrawText3D(JPH::RVec3Arg inPosition, const std::string_vie
 {
 }
 
-PhysicsEngine::PhysicsEngine(): temp_allocator(nullptr), job_system(nullptr)
+PhysicsEngine::PhysicsEngine(): temp_allocator(nullptr), job_system(nullptr), debug_renderer(nullptr)
 {
 }
 
@@ -196,6 +200,8 @@ void PhysicsEngine::Initialize(float gravityScale)
     physics_system.SetBodyActivationListener(&body_activation_listener);
     physics_system.SetContactListener(&contact_listener);
     physics_system.SetGravity(JPH::Vec3(0.0f, -9.81f / 100 * gravityScale, 0.0f));
+
+    debug_renderer = new MyDebugRenderer();
 }
 
 void PhysicsEngine::UpdatePhysics(float deltaTime)

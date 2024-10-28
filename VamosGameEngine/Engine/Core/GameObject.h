@@ -2,11 +2,13 @@
 #include <string>
 #include <vector>
 #include <SimpleMath.h>
+
 #include "Engine/Utilities/ImGuiHelper.h"
 #include "Engine/Utilities/JsonUtil.h"
 
 class Component;
 class Transform;
+class ColliderComponent;
 
 class GameObject {
 public:
@@ -16,6 +18,8 @@ public:
 
     virtual void Start();
     virtual void Update(float deltaTime);
+    void UpdatePhysics(float delta_time);
+
     void Render(const DirectX::SimpleMath::Matrix& viewMatrix, const DirectX::SimpleMath::Matrix& projectionMatrix,
                 DirectX::SimpleMath::Vector3 lightDirection);
     virtual void Destroy();
@@ -29,13 +33,16 @@ public:
     [[nodiscard]] const std::vector<GameObject*>& GetChildren() const { return _children; }
     void AddChild(GameObject* child) { _children.push_back(child); }
 
-
     void AddComponent(Component* component){ _components.push_back(component); }
     void DeleteComponent(Component* component);
     [[nodiscard]] std::vector<Component*> GetComponents() const { return _components; }
 
-    void RenderComponentsGUI() const;
+    void OnCollisionEnter(ColliderComponent* other);
 
+    [[nodiscard]] ColliderComponent* GetDynamicCollider() const { return _dynamicCollider; }
+    void RegisterDynamicCollider(ColliderComponent* collider) { _dynamicCollider = collider; }
+
+    void RenderComponentsGUI() const;
 
     std::string name;
     Transform* transform;
@@ -49,6 +56,7 @@ protected:
     GameObject* _parent = nullptr;
     std::vector<GameObject*> _children;
     std::vector<Component*> _components;
+    ColliderComponent* _dynamicCollider;
 
 public:
     template<typename T>

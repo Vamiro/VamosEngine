@@ -19,6 +19,7 @@ public:
     ~Graphics();
     bool Initialize(HWND hwnd, int width, int height);
     void RenderFrame() const;
+    void RestoreTargets();
     void OnResize(int width, int height);
     bool blockInputForImGui = false;
     ShaderManager* shaderManager;

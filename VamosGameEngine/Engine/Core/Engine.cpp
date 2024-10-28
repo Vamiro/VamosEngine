@@ -3,15 +3,26 @@
 InputDevice* Engine::input_device_ = nullptr;
 Camera* Engine::currentCamera = nullptr;
 Graphics* Engine::gfx_ = nullptr;
+DebugRenderSysImpl* Engine::debugRenderSys = nullptr;
+JPH::BodyInterface* Engine::_bodyInterface = nullptr;
+PhysicsEngine* Engine::physicsEngine = nullptr;
+
 
 Engine::Engine()
 {
     input_device_ = new InputDevice(this);
     gfx_ = new Graphics(this);
     currentCamera = new Camera();
+    debugRenderSys = new DebugRenderSysImpl();
 }
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+void Engine::ToggleFullscreen() {
+    isFullscreen = !isFullscreen;
+    HRESULT hr = gfx_->GetSwapChain()->SetFullscreenState(isFullscreen, nullptr);
+    ErrorLogger::Log(hr, "Failed to toggle fullscreen state.");
+}
 
 LRESULT Engine::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -24,6 +35,7 @@ LRESULT Engine::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         isClosed = true;
         return 0;
     }
+
     case WM_SIZE:
         if (wParam == SIZE_MINIMIZED)
         {
@@ -71,6 +83,7 @@ LRESULT Engine::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             info->ptMinTrackSize.y = 200;
         }
         break;
+
     case WM_ACTIVATE: {
             if (LOWORD(wParam) == WA_INACTIVE) {
                 isFocused = false;
@@ -79,6 +92,14 @@ LRESULT Engine::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             return 0;
     }
+
+    case WM_SYSKEYDOWN:
+        if (wParam == VK_RETURN && (HIWORD(lParam) & KF_ALTDOWN)) {
+            ToggleFullscreen();
+            return 0;
+        }
+        break;
+
     case WM_INPUT: {
         UINT dwSize = 0;
         GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, nullptr, &dwSize, sizeof(RAWINPUTHEADER));

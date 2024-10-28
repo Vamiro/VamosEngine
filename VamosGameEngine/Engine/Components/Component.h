@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+class ColliderComponent;
 class GameObject;
 
 class Component
@@ -16,6 +17,8 @@ public:
 
     const char* GetName() const { return name_; }
     GameObject& GetParent() const { return *parent; }
+
+    virtual void OnCollisionEnter(ColliderComponent* other) {}
 
 protected:
     const char* name_;

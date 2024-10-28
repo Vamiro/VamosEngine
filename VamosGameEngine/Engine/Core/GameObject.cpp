@@ -1,9 +1,19 @@
 ﻿#include "GameObject.h"
 
+#include "Engine/Components/ColliderComponent.h"
 #include "Engine/Components/Transform.h"
 #include "Engine/Components/Model.h"
 
 int GameObject::nextId = 0;
+
+GameObject::GameObject(const std::string& name, const bool visible) :
+name(name), id(nextId++),
+_isVisible(visible),
+_dynamicCollider(nullptr)
+{
+    transform = new Transform(*this);
+    _components.push_back(transform);
+}
 
 void GameObject::Start()
 {
@@ -21,14 +31,17 @@ void GameObject::Update(float deltaTime)
     }
 }
 
-GameObject::GameObject(const std::string& name, const bool visible): name(name), id(nextId++), _isVisible(visible)
+
+void GameObject::UpdatePhysics(float deltaTime)
 {
-    transform = new Transform(*this);
-    _components.push_back(transform);
+    if (_dynamicCollider != nullptr)
+    {
+        _dynamicCollider->UpdatePhysics(deltaTime);
+    }
 }
 
 void GameObject::Render(const DirectX::SimpleMath::Matrix& viewMatrix, const DirectX::SimpleMath::Matrix& projectionMatrix,
-    DirectX::SimpleMath::Vector3 lightDirection)
+                        DirectX::SimpleMath::Vector3 lightDirection)
 {
     Model* mModel = GetComponent<Model>();
     if(mModel != nullptr)
@@ -71,4 +84,12 @@ void GameObject::DeleteComponent(Component* component)
 {
     component->Destroy();
     std::erase(_components, component);
+}
+
+void GameObject::OnCollisionEnter(ColliderComponent* other)
+{
+    for (auto component : _components)
+    {
+        component->OnCollisionEnter(other);
+    }
 }

@@ -2,9 +2,6 @@ cmake_minimum_required(VERSION 3.28)
 project(VamosGameEngine)
 
 set(CMAKE_CXX_STANDARD 20)
-#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:LIBCMTD")
-#set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
-#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
 
 add_compile_definitions(UNICODE)
 
@@ -98,6 +95,14 @@ add_executable(VamosGameEngine WIN32
         VamosGameEngine/Engine/Components/TextureBuffer.h
         VamosGameEngine/Engine/Utilities/ImGuiHelper.cpp
         VamosGameEngine/Engine/Utilities/ImGuiHelper.h
+        VamosGameEngine/Engine/Rendering/DebugRenderSysImpl.cpp
+        VamosGameEngine/Engine/Rendering/DebugRenderSysImpl.h
+        VamosGameEngine/Engine/Rendering/VertexPositionColor.cpp
+        VamosGameEngine/Engine/Rendering/VertexPositionColor.h
+        VamosGameEngine/Engine/Rendering/VertexPositionNormalBinormalTangentColorTex.cpp
+        VamosGameEngine/Engine/Rendering/VertexPositionNormalBinormalTangentColorTex.h
+        VamosGameEngine/Engine/Rendering/VertexPositionTex.cpp
+        VamosGameEngine/Engine/Rendering/VertexPositionTex.h
 )
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
